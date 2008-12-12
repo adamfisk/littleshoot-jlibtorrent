@@ -65,17 +65,9 @@
             <arg line="-classpath '${jarfile}' -force -d '${curr_header_dir}' jnltorrent"/>
         </exec>
     </target>
-
-    <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="asio">       
-        <!--<copy file="../../libtorrent/asio/asio.hpp" toDir="../../libtorrent/libtorrent/include" failonerror="true" verbose="true"/>-->
-    	<exec executable="/bin/sh" dir="../../libtorrent/libtorrent/include">
-    	    <arg line="get_asio.sh"/>
-    	</exec>
-    </target>
 	
     <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="libtorrent" depends="asio">
+    <target name="libtorrent">
         <exec executable="/usr/bin/xcodebuild">
             <arg line="-project ../../libtorrent/mac/libtorrent.xcodeproj"/>
             <arg line="-target libtorrent"/>

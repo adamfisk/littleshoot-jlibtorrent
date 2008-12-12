@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B9E527090EEBD78900203BAF /* liblibtorrent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9E527080EEBD78900203BAF /* liblibtorrent.a */; };
 		F2418CEA0EF2F4D80028E7A0 /* jnltorrentjnilib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */; };
+		F2418CFA0EF326230028E7A0 /* libtorrent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F2418CF90EF326230028E7A0 /* libtorrent.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,9 +18,9 @@
 		0AB364E40B2F671600788B6C /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
 		0AB3653A0B2F688E00788B6C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		0AB3653C0B2F68A200788B6C /* dist */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dist; sourceTree = "<group>"; };
-		B9E527080EEBD78900203BAF /* liblibtorrent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblibtorrent.a; path = ../build/Release/liblibtorrent.a; sourceTree = SOURCE_ROOT; };
 		EB9FD8720AEECD83008E157E /* build.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
 		F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jnltorrentjnilib.cpp; path = src/main/cpp/jnltorrentjnilib.cpp; sourceTree = "<group>"; };
+		F2418CF90EF326230028E7A0 /* libtorrent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtorrent.a; path = ../../libtorrent/mac/build/Release/libtorrent.a; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B9E527090EEBD78900203BAF /* liblibtorrent.a in Frameworks */,
+				F2418CFA0EF326230028E7A0 /* libtorrent.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,8 +38,8 @@
 		00E6828FFEC88D1A11DB9C8B = {
 			isa = PBXGroup;
 			children = (
+				F2418CF90EF326230028E7A0 /* libtorrent.a */,
 				F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */,
-				B9E527080EEBD78900203BAF /* liblibtorrent.a */,
 				EB9FD8720AEECD83008E157E /* build.xml */,
 				0AB364E40B2F671600788B6C /* src */,
 				0A603A8F0B8FCE76009D4747 /* resources */,
@@ -166,6 +166,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../build/Release\"",
+					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
@@ -213,6 +214,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../build/Release\"",
+					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
