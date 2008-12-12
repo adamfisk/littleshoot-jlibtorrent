@@ -25,7 +25,7 @@
 #include <libtorrent/extensions/ut_pex.hpp>
 #include "libtorrent/bencode.hpp"
 
-#include "jnltorrent.h"
+#include "org_lastbamboo_jni_JLibTorrent.h"
 
 typedef std::map<libtorrent::sha1_hash, int> InfoHashToIndexMap;
 
