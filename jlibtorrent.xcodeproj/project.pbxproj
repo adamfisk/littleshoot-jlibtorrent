@@ -63,16 +63,16 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXLegacyTarget section */
-		EB9FD8610AEECCF5008E157E /* jnltorrent */ = {
+		EB9FD8610AEECCF5008E157E /* jlibtorrent */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "-emacs $(ACTION)";
-			buildConfigurationList = EB9FD8690AEECD13008E157E /* Build configuration list for PBXLegacyTarget "jnltorrent" */;
+			buildConfigurationList = EB9FD8690AEECD13008E157E /* Build configuration list for PBXLegacyTarget "jlibtorrent" */;
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/ant;
 			dependencies = (
 			);
-			name = jnltorrent;
+			name = jlibtorrent;
 			passBuildSettingsInEnvironment = 1;
 			productName = AntJNIWrapper;
 		};
@@ -109,7 +109,7 @@
 			projectRoot = "";
 			targets = (
 				4CEBA78E08679EF10015D03E /* JNILib */,
-				EB9FD8610AEECCF5008E157E /* jnltorrent */,
+				EB9FD8610AEECCF5008E157E /* jlibtorrent */,
 			);
 		};
 /* End PBXProject section */
@@ -253,7 +253,7 @@
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				PRODUCT_NAME = jnltorrent;
+				PRODUCT_NAME = jlibtorrent;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -279,7 +279,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EB9FD8690AEECD13008E157E /* Build configuration list for PBXLegacyTarget "jnltorrent" */ = {
+		EB9FD8690AEECD13008E157E /* Build configuration list for PBXLegacyTarget "jlibtorrent" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EB9FD86A0AEECD13008E157E /* Debug */,

@@ -3,7 +3,7 @@
 	00E6828EFEC88D1A11DB9C8B /* Project object */ = {
 		activeBuildConfigurationName = Release;
 		activeExecutable = 6A9FA6570246BA6C0CC91562 /* jnltorrent */;
-		activeTarget = EB9FD8610AEECCF5008E157E /* jnltorrent */;
+		activeTarget = EB9FD8610AEECCF5008E157E /* jlibtorrent */;
 		addToTargets = (
 			4CEBA78E08679EF10015D03E /* JNILib */,
 		);
@@ -74,6 +74,10 @@
 			PBXWorkspaceStateSaveDate = 250803358;
 		};
 		perUserProjectItems = {
+			F2418D330EF327FF0028E7A0 /* PBXTextBookmark */ = F2418D330EF327FF0028E7A0 /* PBXTextBookmark */;
+			F2418D340EF327FF0028E7A0 /* PBXTextBookmark */ = F2418D340EF327FF0028E7A0 /* PBXTextBookmark */;
+			F2418D360EF327FF0028E7A0 /* PBXTextBookmark */ = F2418D360EF327FF0028E7A0 /* PBXTextBookmark */;
+			F2418D370EF327FF0028E7A0 /* PBXTextBookmark */ = F2418D370EF327FF0028E7A0 /* PBXTextBookmark */;
 			F25265B30EF18DD500D79CE4 = F25265B30EF18DD500D79CE4 /* PBXTextBookmark */;
 			F2526B220EF2D36F00D79CE4 = F2526B220EF2D36F00D79CE4 /* PBXTextBookmark */;
 			F2526B230EF2D36F00D79CE4 = F2526B230EF2D36F00D79CE4 /* PBXTextBookmark */;
@@ -177,16 +181,81 @@
 		);
 		startupPath = dist;
 	};
-	EB9FD8610AEECCF5008E157E /* jnltorrent */ = {
+	EB9FD8610AEECCF5008E157E /* jlibtorrent */ = {
 		activeExec = 0;
 	};
 	EB9FD8720AEECD83008E157E /* build.xml */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1171, 1302}}";
-			sepNavSelRange = "{1238, 15}";
-			sepNavVisRange = "{2052, 1659}";
+			sepNavIntBoundsRect = "{{0, 0}, {1171, 1666}}";
+			sepNavSelRange = "{4421, 0}";
+			sepNavVisRange = "{1617, 1836}";
 			sepNavVisRect = "{{0, 8}, {847, 783}}";
 			sepNavWindowFrame = "{{382, 4}, {886, 874}}";
+		};
+	};
+	F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1171, 8728}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 936}";
+			sepNavWindowFrame = "{{15, -1}, {897, 874}}";
+		};
+	};
+	F2418D330EF327FF0028E7A0 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */;
+		name = "jnltorrentjnilib.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 509;
+		vrLoc = 0;
+	};
+	F2418D340EF327FF0028E7A0 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F2418D350EF327FF0028E7A0 /* JLibTorrent.class */;
+		name = "JLibTorrent.class: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 403;
+		vrLoc = 0;
+	};
+	F2418D350EF327FF0028E7A0 /* JLibTorrent.class */ = {
+		isa = PBXFileReference;
+		name = JLibTorrent.class;
+		path = /Users/adamfisk/littleshoot/trunk/jni/jlibtorrent/bin/org/lastbamboo/jni/JLibTorrent.class;
+		sourceTree = "<absolute>";
+	};
+	F2418D360EF327FF0028E7A0 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */;
+		name = "jnltorrentjnilib.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 509;
+		vrLoc = 0;
+	};
+	F2418D370EF327FF0028E7A0 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = F2418D380EF327FF0028E7A0 /* JLibTorrent.class */;
+		name = "JLibTorrent.class: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 403;
+		vrLoc = 0;
+	};
+	F2418D380EF327FF0028E7A0 /* JLibTorrent.class */ = {
+		isa = PBXFileReference;
+		name = JLibTorrent.class;
+		path = /Users/adamfisk/littleshoot/trunk/jni/jlibtorrent/bin/org/lastbamboo/jni/JLibTorrent.class;
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1171, 655}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 403}";
 		};
 	};
 	F25265B30EF18DD500D79CE4 /* PBXTextBookmark */ = {
