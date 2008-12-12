@@ -203,7 +203,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					"\"$(SRCROOT)/../../boost\"",
+					"\"$(SRCROOT)/../../boost/boost\"",
 					"\"$(SRCROOT)/../../libtorrent/include\"",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"${OBJROOT}/Headers\"";
@@ -213,7 +213,6 @@
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../build/Release\"",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
