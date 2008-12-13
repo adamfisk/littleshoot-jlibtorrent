@@ -16,7 +16,10 @@
         </parent>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.lastbamboo</groupId>
+            <artifactId>lastbamboo-common-http-client</artifactId>
+            </dependency>
         </dependencies>
 
     <build>
