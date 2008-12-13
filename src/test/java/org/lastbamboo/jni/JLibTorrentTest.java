@@ -28,7 +28,7 @@ public class JLibTorrentTest
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
-    @Test public void testTorrent() throws Exception
+    public void testTorrent() throws Exception
         {
         
         final File pwd = new File("./src/main/resources");
