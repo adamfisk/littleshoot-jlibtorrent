@@ -161,13 +161,24 @@
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../build/Release\"",
-					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
+					"\"$(SRCROOT)/../../libtorrent/mac/build/debug\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
 				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-lssl",
+					"-lcrypto",
+					"-ltorrent",
+					"-lboost_system-mt-d",
+					"-lboost_filesystem-mt-d",
+					"-lboost_thread-mt-d",
+				);
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = antbasedjni;
@@ -210,6 +221,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
@@ -217,6 +233,10 @@
 				OTHER_LDFLAGS = (
 					"-lssl",
 					"-lcrypto",
+					"-ltorrent",
+					"-lboost_system-mt",
+					"-lboost_filesystem-mt",
+					"-lboost_thread-mt",
 				);
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
