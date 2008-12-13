@@ -232,7 +232,6 @@ class session : private boost::noncopyable
 #endif
 	}
 
-	
 	std::string const& progress_bar(float progress, int width, char const* code = "33")
 	{
         static std::string bar;
@@ -246,8 +245,6 @@ class session : private boost::noncopyable
         std::fill_n(std::back_inserter(bar), width - progress_chars, '-');
         return bar;
 	}
-	
-
 	
 	void logAlerts()
 	{
@@ -404,28 +401,35 @@ class session : private boost::noncopyable
         // ...
 };
 
-// C function to C++ interface.
+// Java function to C interfaces.
 
-void start()
+JNIEXPORT void JNICALL Java_jnltorrent_start(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent start" << std::endl;
     
     session::instance().start();
 }
 
-void stop()
+JNIEXPORT void JNICALL Java_jnltorrent_stop(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent stop" << std::endl;
     
     session::instance().stop();
 }
 
-int get_torrent_handle(const char * arg)
+JNIEXPORT jint JNICALL Java_jnltorrent_get_1torrent_1handle(
+    JNIEnv * env, jobject obj, jstring arg
+    )
 {
-    return 0;
-	/*
-	const std::string s = boost::lexical_cast<std::string>(handle.get_torrent_info().info_hash());
-	NSString * handleHash = [NSString stringWithUTF8String:(s.c_str())];
+  const char * argutf  = env->GetStringUTFChars(arg, JNI_FALSE);
+  
+  // Don't use objective-c!!!
+
+  jint rc = 0;
+  /* = get_torrent_handle(argutf);
+  
+    const std::string s = boost::lexical_cast<std::string>(handle.get_torrent_info().info_hash());
+    NSString * handleHash = [NSString stringWithUTF8String:(s.c_str())];
 	
 	NSArray * torrents = [[TorrentController sharedInstance] torrents];
 	
@@ -440,14 +444,28 @@ int get_torrent_handle(const char * arg)
 	
 	return (nil);
 	 */
+  
+  env->ReleaseStringUTFChars(arg, argutf);
+
+  return rc;
 }
 
-int download_torrent(char const* torrentPath)
+JNIEXPORT void JNICALL Java_jnltorrent_download_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+    )
 {
+	std::cout << "Got download torrent call from Java with data:" << arg << std::endl;
+	//const char * argutf  = env->GetStringUTFChars(arg, JNI_FALSE);
+	
+	//jint rc = download_torrent(argutf);
+    
 	//std::cout << "Got download torrent call" << arg << std::endl;
 	
 	/*
-	char const* torrent_url = "http://torrents.thepiratebay.org/4531640/Adobe_Photoshop_CS4_Extended_(Mac_OS_X)_[RH].4531640.TPB.torrent";
+	char const* torrent_url = 
+        "http://torrents.thepiratebay.org/4531640/Adobe_Photoshop_CS4_Extended_"
+        "(Mac_OS_X)_[RH].4531640.TPB.torrent"
+    ;
 	
 	libtorrent::add_torrent_params p;
 	p.save_path = "./";
@@ -455,68 +473,37 @@ int download_torrent(char const* torrentPath)
 	m_session->add_torrent(p);
 	*/
 	//return session::instance().download_torrent(torrentPath);
-	return 0;
-}
 
-void processEvents()
-{
-	session::instance().logAlerts();
-}
-
-// Java function to C interfaces.
-
-JNIEXPORT void JNICALL Java_jnltorrent_start(JNIEnv * env , jobject obj)
-{
-    start();
-}
-
-JNIEXPORT void JNICALL Java_jnltorrent_stop(JNIEnv * env , jobject obj)
-{
-    stop();
-}
-
-JNIEXPORT jint JNICALL Java_jnltorrent_get_1torrent_1handle(
-    JNIEnv * env, jobject obj, jstring arg
-    )
-{
-  const char * argutf  = env->GetStringUTFChars(arg, JNI_FALSE);
-  
-  jint rc = get_torrent_handle(argutf);
-  
-  env->ReleaseStringUTFChars(arg, argutf);
-
-  return rc;
-}
-
-JNIEXPORT void JNICALL Java_jnltorrent_download_1torrent(JNIEnv * env, jobject obj, jstring arg)
-{
-	std::cout << "Got download torrent call from Java with data:" << arg << std::endl;
-	//const char * argutf  = env->GetStringUTFChars(arg, JNI_FALSE);
-	
-	//jint rc = download_torrent(argutf);
-	
 	//env->ReleaseStringUTFChars(arg, argutf);
-	
-	//return rc;
 }
 
 JNIEXPORT void JNICALL Java_jnltorrent_processEvents(JNIEnv * env, jobject obj)
 {
-	processEvents();
+    // Perfrom any event processing here.
+    session::instance().logAlerts();
 }
 
-JNIEXPORT jint JNICALL Java_jnltorrent_add_1torrent(JNIEnv * env, jobject obj, jstring arg, jint size)
+JNIEXPORT jint JNICALL Java_jnltorrent_add_1torrent(
+    JNIEnv * env, jobject obj, jstring arg, jint size
+    )
 {
-	std::cout << "Got download torrent call from Java with data:" << arg << std::endl;
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	if (torrentPath == NULL) {
+	std::cout << 
+        "Got download torrent call from Java with data:" << arg << 
+    std::endl;
+	
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+	
+    if (!torrentPath)
+    {
 		return -1; /* OutOfMemoryError already thrown */
 	}
 	//int length = env->GetStringUTFLength(arg);
 	//jint rc = download_torrent(torrentData);
 	
 	//std::vector<char> v(torrentPath, torrentPath + sizeof(torrentPath));
-	libtorrent::torrent_handle* handle = session::instance().download_torrent(torrentPath, size);
+	libtorrent::torrent_handle * handle = session::instance().download_torrent(
+        torrentPath, size
+    );
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	
