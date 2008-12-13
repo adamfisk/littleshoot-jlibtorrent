@@ -49,6 +49,12 @@ public class JLibTorrent
         stop();
         }
     
+
+    public void udpateFileData()
+        {
+        processEvents();
+        }
+    
     native long get_max_byte_for_torrent(final String path);
     /**
      * Initialize the libtorrent core.

@@ -140,8 +140,16 @@ class session : private boost::noncopyable
 				std::cout << "Found torrent" << std::endl;
 				torrent_handle th = iter->second;
 				
-				if (!th.has_metadata()) return -1;
-				if (!th.is_valid()) return -1;
+				if (!th.has_metadata()) 
+				{
+					cerr << "No metadata for torrent" << endl;
+					return -1;
+				}
+				if (!th.is_valid()) 
+				{
+					cerr << "Torrent not valid" << endl; 
+					return -1;
+				}
 				torrent_status status = th.status();
 				
 				sha1_hash sha1 = th.info_hash();
@@ -152,9 +160,33 @@ class session : private boost::noncopyable
 				{
 					index = iter->second;
 					std::cout << "Found existing index: " << index << std::endl;
-					return index;
+					//return index;
 				}
-				return -1;
+				else
+				{
+					cerr << "No existing torrent" << endl;
+					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
+					return -1;
+				}
+				unsigned int numPieces = status.pieces.size();
+				std::cout << "Num pieces is: " << numPieces << std::endl;
+				for (unsigned int j = index; j < numPieces; j++)
+				{
+					if (status.pieces[j])
+					{
+						std::cout << "Found piece at index: " << j << std::endl;
+						// We have this piece -- stream it.
+					} else
+					{
+						// We do not have this piece -- set the index and
+						// break.
+						std::cout << "Setting index to: " << j << std::endl;
+						m_piece_to_index_map[sha1] = j;
+						
+						cout << "Returning index: " << j << endl;
+						return j;
+					}
+				}
 			}
 			else
 			{
