@@ -23,6 +23,33 @@ public class JLibTorrent
         add_torrent(torrentFile.getCanonicalPath(), (int) torrentFile.length());
         }
 
+
+    public long getMaxByteForTorrent(final File torrentFile)
+        {
+        try
+            {
+            final String path = torrentFile.getCanonicalPath();
+            return get_max_byte_for_torrent(path);
+            }
+        catch (IOException e)
+            {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            }
+        return -1;
+        }
+    
+    public void startSession()
+        {
+        start();
+        }
+    
+    public void stopSession()
+        {
+        stop();
+        }
+    
+    native long get_max_byte_for_torrent(final String path);
     /**
      * Initialize the libtorrent core.
      */

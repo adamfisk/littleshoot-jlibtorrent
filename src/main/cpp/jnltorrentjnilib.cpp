@@ -27,7 +27,11 @@
 
 #include "org_lastbamboo_jni_JLibTorrent.h"
 
+using namespace std;
+
+typedef std::map<string, libtorrent::torrent_handle> TorrentPathToDownloadHandle;
 typedef std::map<libtorrent::sha1_hash, int> InfoHashToIndexMap;
+
 
 /**
  * This implements a libtorrent session interface via a thread safe, 
@@ -97,40 +101,18 @@ class session : private boost::noncopyable
             m_session.reset();
         }
 	
-		libtorrent::torrent_handle* download_torrent(const char* torrentPath, int size)
+		libtorrent::torrent_handle download_torrent(const char* torrentPath, int size)
 		{
-			//std::cout << "Got download torrent call" << arg << std::endl;
-			//char const* torrent_url = "http://torrents.thepiratebay.org/4531640/Adobe_Photoshop_CS4_Extended_(Mac_OS_X)_[RH].4531640.TPB.torrent";
-		
-			//char const* torrent_url = "http://torrents.thepiratebay.org/4458590/Photoshop_CS4_Retail_with_Crack_MAC_OSX.4458590.TPB.torrent";
-			
-			/*
-			libtorrent::lazy_entry e;// = libtorrent::bdecode(arg, arg + sizeof(arg)-1);
-			int ret = lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
-			libtorrent::add_torrent_params p;
-			p.save_path = "./";
-			p.ti = new libtorrent::torrent_info(e);
-			m_session->add_torrent(p);
-		
-			//return session::instance().download_torrent(torrent_url);
-			return 0;
-			*/ 
-			 
-			
-			//int size = 3348;
 			std::cout << "Building buffer of size: " << size << std::endl;
 			std::vector<char> buf(size);
 			std::ifstream(torrentPath, std::ios_base::binary).read(&buf[0], size);
-			
-			//libtorrent::lazy_entry e;// = libtorrent::bdecode(arg, arg + sizeof(arg)-1);
-			//int ret = lazy_bdecode(torrentData, torrentData + length, e);
 			
 			libtorrent::lazy_entry e;
 			int ret = libtorrent::lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
 			if (ret != 0)
 			{
 				std::cerr << "invalid bencoding: " << ret << std::endl;
-				return NULL;
+				return libtorrent::torrent_handle();
 			}
 
 			std::cerr << "bencoding is valid!!: " << ret << std::endl;
@@ -139,7 +121,47 @@ class session : private boost::noncopyable
 			p.ti = new libtorrent::torrent_info(e);
 			libtorrent::torrent_handle handle = m_session->add_torrent(p);
 			
-			return &handle;
+			std::cout << "Adding torrent path: " << torrentPath << std::endl;
+			
+			string stringPath = torrentPath;
+			m_torrent_path_to_handle.insert(
+				TorrentPathToDownloadHandle::value_type(stringPath, handle));
+			return handle;
+		}
+	
+		long get_index_for_torrent(const char* torrentPath)
+		{
+			using namespace libtorrent;
+			string stringPath = torrentPath;
+			TorrentPathToDownloadHandle::const_iterator iter = 
+				m_torrent_path_to_handle.find(stringPath);
+			if (iter != m_torrent_path_to_handle.end())
+			{
+				std::cout << "Found torrent" << std::endl;
+				torrent_handle th = iter->second;
+				
+				if (!th.has_metadata()) return -1;
+				if (!th.is_valid()) return -1;
+				torrent_status status = th.status();
+				
+				sha1_hash sha1 = th.info_hash();
+				
+				int index = 0;
+				InfoHashToIndexMap::const_iterator iter = m_piece_to_index_map.find(sha1);
+				if (iter != m_piece_to_index_map.end())
+				{
+					index = iter->second;
+					std::cout << "Found existing index: " << index << std::endl;
+					return index;
+				}
+				return -1;
+			}
+			else
+			{
+				// We don't yet know about the torrent.  
+				std::cerr << "No torrent found at " << torrentPath << std::endl;
+				return -1;
+			}
 		}
         
         boost::shared_ptr<libtorrent::session> & get_session()
@@ -245,8 +267,7 @@ class session : private boost::noncopyable
 			if (!h.has_metadata()) continue;
 			if (!h.is_valid()) continue;
 			torrent_status status = h.status();
-			
-			
+
 			std::vector<size_type> file_progress;
 			h.file_progress(file_progress);
 			libtorrent::torrent_info const& info = h.get_torrent_info();
@@ -263,9 +284,7 @@ class session : private boost::noncopyable
 				std::cout << " " << to_string(progress * 100.f, 5) << "% "
 					<< add_suffix(file_progress[i]) << " "
 					<< info.file_at(i).path.leaf() << "\n";
-			}
-			
-			
+			}	
 		}
 		//float downloadRate = m_status.download_rate;
 		//std::cout << "Download rate: " << downloadRate << std::endl;		
@@ -380,6 +399,7 @@ class session : private boost::noncopyable
 		int m_count;
 		libtorrent::session_status m_status;
 		InfoHashToIndexMap m_piece_to_index_map;
+		TorrentPathToDownloadHandle m_torrent_path_to_handle;
 		
     
     protected:
@@ -447,20 +467,6 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_download_1torrent(
     
 	//std::cout << "Got download torrent call" << arg << std::endl;
 	
-	/*
-	char const* torrent_url = 
-        "http://torrents.thepiratebay.org/4531640/Adobe_Photoshop_CS4_Extended_"
-        "(Mac_OS_X)_[RH].4531640.TPB.torrent"
-    ;
-	
-	libtorrent::add_torrent_params p;
-	p.save_path = "./";
-	p.ti = new libtorrent::torrent_info(torrent_url);
-	m_session->add_torrent(p);
-	*/
-	//return session::instance().download_torrent(torrentPath);
-
-	//env->ReleaseStringUTFChars(arg, argutf);
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_processEvents(JNIEnv * env, jobject obj)
@@ -473,60 +479,36 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
     JNIEnv * env, jobject obj, jstring arg, jint size
     )
 {
-	std::cout << 
-        "Got download torrent call from Java with data:" << arg << 
-    std::endl;
-	
+	std::cout << "Got download call from Java with data:" << arg << std::endl;
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	
     if (!torrentPath)
     {
 		return -1; /* OutOfMemoryError already thrown */
 	}
-	//int length = env->GetStringUTFLength(arg);
-	//jint rc = download_torrent(torrentData);
 	
-	//std::vector<char> v(torrentPath, torrentPath + sizeof(torrentPath));
-	libtorrent::torrent_handle * handle = session::instance().download_torrent(
+	libtorrent::torrent_handle  handle = session::instance().download_torrent(
         torrentPath, size
     );
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
-	
-	//if (handle) {
-		return 0;
-	//}
-	//return 1;
-	//jint arrayLength = env->GetArrayLength(arg);
-	//char buf[arrayLength];
-	//const jbyte *torrent = env->GetByteArrayElements(arg, JNI_FALSE);
-	
-	//jbyte *data;
-	//char *p;
-	//p = data = env->GetByteArrayElements (arg, NULL);
-	//std::vector<char> chars(arrayLength);
-	//jint rc = download_torrent(chars);
-	/*
-	int i = 0;
-	std::cout << "Copying bytes to buf..." <<  std::endl;
-	std::vector<char> chars(arrayLength);
-	for (i=0; i<arrayLength; i++) {
-		//buf[i] = torrent[i];
-		unsigned char curChar = (unsigned char)torrent[i];
-		std::cout << curChar;
-		chars.push_back(curChar);
-	}
-	
-	for (i=0; i<arrayLength; i++) {
-		//std::cout << buf[i] <<  std::endl; 
-	}
-	
-	jint rc = download_torrent(chars);
-	 */
-	
-	//env->ReleaseStringUTFChars(arg, argutf);
-	//env->ReleaseByteArrayElements(arg, torrent, JNI_ABORT);
-	
-	//return rc;
+	return 0;
 }
+
+JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_1torrent(
+	JNIEnv * env, jobject obj, jstring arg
+	)
+{
+	std::cout << "Got download call from Java with data:" << arg << std::endl;
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		return -1; /* OutOfMemoryError already thrown */
+	}
+	
+	long index = session::instance().get_index_for_torrent(torrentPath);
+	
+	env->ReleaseStringUTFChars(arg, torrentPath);
+	return index;	
+}
+
 
