@@ -261,6 +261,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -300,8 +302,6 @@
 								<string>0AB364E40B2F671600788B6C</string>
 								<string>0AB3653C0B2F68A200788B6C</string>
 								<string>1C37FBAC04509CD000000102</string>
-								<string>B9E5276E0EEBD85800203BAF</string>
-								<string>B9E5276F0EEBD85800203BAF</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
@@ -342,8 +342,6 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -358,14 +356,9 @@
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
 										<string>jnltorrentjnilib.cpp</string>
-										<key>_historyCapacity</key>
-										<integer>0</integer>
-										<key>bookmark</key>
-										<string>B9E5279F0EEBDD1B00203BAF</string>
 										<key>history</key>
 										<array>
 											<string>B9E524CC0EEBD08600203BAF</string>
-											<string>B9E527710EEBD85800203BAF</string>
 											<string>B9E527900EEBDB9700203BAF</string>
 											<string>B9E527910EEBDB9700203BAF</string>
 										</array>
@@ -373,23 +366,14 @@
 										<array>
 											<string>B9AB90E50EEBC3B400923FA9</string>
 											<string>B9AB90E60EEBC3B400923FA9</string>
-											<string>B9AB90EF0EEBC3B400923FA9</string>
 											<string>B9E524BB0EEBCF4C00203BAF</string>
 											<string>B9E524CF0EEBD08600203BAF</string>
-											<string>B9E524D00EEBD08600203BAF</string>
 											<string>B9E525300EEBD67200203BAF</string>
-											<string>B9E527730EEBD85800203BAF</string>
-											<string>B9E527740EEBD85800203BAF</string>
 											<string>B9E5277F0EEBDA2A00203BAF</string>
-											<string>B9E527800EEBDA2A00203BAF</string>
 											<string>B9E527810EEBDA2A00203BAF</string>
-											<string>B9E527820EEBDA2A00203BAF</string>
 											<string>B9E527830EEBDA2A00203BAF</string>
-											<string>B9E527840EEBDA2A00203BAF</string>
 											<string>B9E527850EEBDA2A00203BAF</string>
-											<string>B9E5278B0EEBDAC700203BAF</string>
 											<string>B9E527920EEBDB9700203BAF</string>
-											<string>B9E527930EEBDB9700203BAF</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -447,9 +431,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>B9E524BD0EEBCF4C00203BAF</string>
+				<string>B9D0496B0EF343530018E4DA</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>B9E524BE0EEBCF4C00203BAF</string>
+				<string>B9D0496C0EF343530018E4DA</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -568,7 +552,7 @@
 	<key>StatusbarIsVisible</key>
 	<true/>
 	<key>TimeStamp</key>
-	<real>250338587.274932</real>
+	<real>250825309.62949401</real>
 	<key>ToolbarDisplayMode</key>
 	<integer>1</integer>
 	<key>ToolbarIsVisible</key>
@@ -583,10 +567,8 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1CD10A99069EF8BA00B06720</string>
-		<string>/Users/julian/Documents/libtorrent/mac/jnltorrent/jnltorrent.xcodeproj</string>
 		<string>B9AB910B0EEBC3B400923FA9</string>
-		<string>1C78EAAD065D492600B07095</string>
+		<string>/Users/julian/Documents/littleshoot/trunk/jni/jlibtorrent/jlibtorrent.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
 	<string>0 110 1440 768 0 0 1440 878 </string>
@@ -605,14 +587,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>jnltorrentjnilib.cpp</string>
+								<string></string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -629,6 +609,8 @@
 							<string>273pt</string>
 						</dict>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -668,7 +650,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>B9AB910B0EEBC3B400923FA9</string>
-				<string>B9E524BF0EEBCF4C00203BAF</string>
+				<string>B9D0496D0EF343530018E4DA</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -679,7 +661,7 @@
 			<key>WindowToolGUID</key>
 			<string>B9AB910B0EEBC3B400923FA9</string>
 			<key>WindowToolIsVisible</key>
-			<true/>
+			<false/>
 		</dict>
 		<dict>
 			<key>FirstTimeWindowDisplayed</key>
