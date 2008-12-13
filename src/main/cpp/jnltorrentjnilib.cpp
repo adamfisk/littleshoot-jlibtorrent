@@ -39,13 +39,7 @@ class session : private boost::noncopyable
     
         static session & instance() 
         {
-            using boost::details::pool::singleton_default;
-                
-            session & instance = singleton_default<session>::instance();
-                    
-            // ...
-                
-            return instance;
+            return boost::details::pool::singleton_default<session>::instance();
         }
 
         void start()
