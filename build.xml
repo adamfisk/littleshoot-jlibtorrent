@@ -68,14 +68,20 @@
 	
     <!-- Note: this target requires that Xcode Tools be installed -->
     <target name="libtorrent">
+	<!-- 
+		<exec executable="sh" dir="../../libtorrent">
+            <arg line="build.sh"/>
+        </exec> 
+	
         <exec executable="/usr/bin/xcodebuild">
             <arg line="-project ../../libtorrent/mac/libtorrent.xcodeproj"/>
             <arg line="-target libtorrent"/>
         </exec>   
+		-->
     </target>
 	
     <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="nativelib" depends="javah, libtorrent">
+    <target name="nativelib" depends="javah">
         <exec executable="/usr/bin/xcodebuild">
             <arg line="-project ${native.project}"/>
             <arg line="-target ${native.target}"/>
