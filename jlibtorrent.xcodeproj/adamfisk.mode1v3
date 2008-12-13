@@ -341,7 +341,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>F2418DE40EF344060028E7A0</string>
+										<string>F2418E360EF352240028E7A0</string>
 										<key>history</key>
 										<array>
 											<string>F25265B30EF18DD500D79CE4</string>
@@ -587,7 +587,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {1425, 0}}</string>
 								<key>RubberWindowFrame</key>
-								<string>-3 448 1425 417 0 0 1440 878 </string>
+								<string>6 444 1425 417 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -615,7 +615,7 @@
 								<key>Frame</key>
 								<string>{{0, 5}, {1425, 371}}</string>
 								<key>RubberWindowFrame</key>
-								<string>-3 448 1425 417 0 0 1440 878 </string>
+								<string>6 444 1425 417 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXBuildResultsModule</string>
@@ -645,7 +645,7 @@
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.buildV3</string>
 			<key>WindowString</key>
-			<string>-3 448 1425 417 0 0 1440 878 </string>
+			<string>6 444 1425 417 0 0 1440 878 </string>
 			<key>WindowToolGUID</key>
 			<string>F29D5CAB0EECEB4E008E7F50</string>
 			<key>WindowToolIsVisible</key>

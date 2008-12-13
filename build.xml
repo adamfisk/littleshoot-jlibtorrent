@@ -86,7 +86,7 @@
             <arg line="-project ${native.project}"/>
             <arg line="-target ${native.target}"/>
         </exec>        
-        <copy file="${curr_build_dir}/${native.library}" toDir="${bin}" failonerror="true" verbose="true"/>
+        <copy file="${curr_build_dir}/${native.library}" toDir="${resources}" failonerror="true" verbose="true"/>
     </target>
 	
     <!-- Note: this target requires that Xcode Tools be installed -->

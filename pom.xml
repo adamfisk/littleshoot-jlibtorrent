@@ -25,7 +25,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                    <execution>
-                        <phase>package</phase>
+                        <phase>process-classes</phase>
                         <configuration>
                             <tasks>
                                 <ant antfile="${basedir}/build.xml">
