@@ -39,7 +39,7 @@ class session : private boost::noncopyable
     
         static session & instance() 
         {
-            return boost::details::pool::singleton_default<session>::instance();
+			return boost::details::pool::singleton_default<session>::instance();
         }
 
         void start()
@@ -86,20 +86,6 @@ class session : private boost::noncopyable
 			
 			std::cout << "About to log alerts..." << std::endl;
 			logAlerts();
-			/*
-			int n;
-//			printf ("Starting countdown...\n");
-			std::cout << "Starting countdown...\n" << std::endl;
-			for (n=10; n>0; n--)
-			{
-				//printf ("%d\n",n);
-				std::cout << "cur number\n" << n << std::endl;
-				//sleep (1);
-				sleep(1);
-			}
-			//printf ("FIRE!!!\n");
-			std::cout << "Fire!" << std::endl;
-			 */
             sleep(10);
 			
 			m_status = m_session->status();
@@ -132,7 +118,7 @@ class session : private boost::noncopyable
 			 
 			
 			//int size = 3348;
-			std::cout << "Building buffer of size" << size << std::endl;
+			std::cout << "Building buffer of size: " << size << std::endl;
 			std::vector<char> buf(size);
 			std::ifstream(torrentPath, std::ios_base::binary).read(&buf[0], size);
 			
@@ -364,7 +350,7 @@ class session : private boost::noncopyable
 			{
 				// We don't yet know about the torrent.  Set its start index
 				// to 0.
-				std::cout << "We didn't find the index.  Setting sha-1 to 0. " << std::endl;
+				std::cout << "We didn't find the index. Setting start index to 0. " << std::endl;
 				m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
 			}
 			unsigned int numPieces = status.pieces.size();
@@ -403,21 +389,21 @@ class session : private boost::noncopyable
 
 // Java function to C interfaces.
 
-JNIEXPORT void JNICALL Java_jnltorrent_start(JNIEnv * env , jobject obj)
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent start" << std::endl;
     
     session::instance().start();
 }
 
-JNIEXPORT void JNICALL Java_jnltorrent_stop(JNIEnv * env , jobject obj)
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_stop(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent stop" << std::endl;
     
     session::instance().stop();
 }
 
-JNIEXPORT jint JNICALL Java_jnltorrent_get_1torrent_1handle(
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1torrent_1handle(
     JNIEnv * env, jobject obj, jstring arg
     )
 {
@@ -450,7 +436,7 @@ JNIEXPORT jint JNICALL Java_jnltorrent_get_1torrent_1handle(
   return rc;
 }
 
-JNIEXPORT void JNICALL Java_jnltorrent_download_1torrent(
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_download_1torrent(
     JNIEnv * env, jobject obj, jstring arg
     )
 {
@@ -477,13 +463,13 @@ JNIEXPORT void JNICALL Java_jnltorrent_download_1torrent(
 	//env->ReleaseStringUTFChars(arg, argutf);
 }
 
-JNIEXPORT void JNICALL Java_jnltorrent_processEvents(JNIEnv * env, jobject obj)
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_processEvents(JNIEnv * env, jobject obj)
 {
     // Perfrom any event processing here.
     session::instance().logAlerts();
 }
 
-JNIEXPORT jint JNICALL Java_jnltorrent_add_1torrent(
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
     JNIEnv * env, jobject obj, jstring arg, jint size
     )
 {
