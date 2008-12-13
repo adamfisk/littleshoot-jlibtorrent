@@ -204,7 +204,7 @@
 					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					"\"$(SRCROOT)/../../boost/boost\"",
-					"\"$(SRCROOT)/../../libtorrent/include\"",
+					"\"$(SRCROOT)/../../libtorrent/libtorrent/include\"",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"${OBJROOT}/Headers\"";
 				HEADER_SEARCH_PATHS_QUOTED_2 = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/JavaVM.framework/Headers\"";
