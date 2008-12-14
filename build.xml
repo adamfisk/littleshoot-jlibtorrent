@@ -11,6 +11,7 @@
     <property name="native.project" value="jlibtorrent.xcodeproj"/>
     <property name="native.library" value="libjnltorrent.jnilib"/>
     <property name="env.CONFIGURATION" value="Release"/>
+    <property name="littleshoot.libs" value="../../lib"/>
 
     <fileset id="lib.jars" dir="${lib}">
         <include name="**/*.jar"/>
@@ -35,7 +36,14 @@
         <mkdir dir="${lib}"/>
         <mkdir dir="${bin}"/>
         <mkdir dir="${jars}"/>
-        <mkdir dir="${dist}"/>        
+        <mkdir dir="${dist}"/>   
+    
+        <condition property="isMac">
+            <os family="mac"/>
+        </condition>
+        <condition property="isWindows">
+            <os family="windows"/>
+        </condition>
     </target>
 
     <target name="compile" depends="init" description="Compile JNI Wrapper code">
@@ -81,22 +89,31 @@
     </target>
 	
     <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="nativelib" depends="javah">
-        <exec executable="/usr/bin/xcodebuild">
+    <target name="xcodecompile">
+    	<exec executable="/usr/bin/xcodebuild">
             <arg line="-project ${native.project}"/>
             <arg line="-target ${native.target}"/>
-        </exec>        
+        </exec>     
+    	<!--
         <copy file="${curr_build_dir}/${native.library}" toDir="${resources}" failonerror="true" verbose="true"/>
+        -->
     </target>
 	
-    <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="xcodebuild" depends="jar">
-        <exec executable="/usr/bin/xcodebuild">
-            <arg line="-project ${native.project}"/>
-            <arg line="-target ${native.target}"/>
-        </exec>        
-        <copy file="${curr_build_dir}/${native.library}" toDir="${resources}" failonerror="true" verbose="true"/>
+	<target name="copyMac" if="isMac"> 
+		<echo>"Copying prop file on mac"</echo>
+        <copy file="${curr_build_dir}/libjnltorrent.jnilib" toDir="${littleshoot.libs}" failonerror="true" verbose="true"/>
     </target>
+
+    <target name="copyWin" if="isWin">
+    	<echo>"Copying prop file on windows"</echo>
+        <copy file="${curr_build_dir}/jnltorrent.dll" toDir="${littleshoot.libs}" failonerror="true" verbose="true"/>
+    </target>
+
+    <!-- Note: this target requires that Xcode Tools be installed -->
+    <target name="nativelib" depends="javah, xcodecompile, copyMac, copyWin"></target>
+    	
+    <!-- Note: this target requires that Xcode Tools be installed -->
+    <target name="xcodebuild" depends="jar, xcodecompile, copyMac, copyWin"></target>
     
     <!-- install target. Copy the built objects to the 'dist' directory. -->
     <target name="install" description="Install jar" depends="xcodebuild">

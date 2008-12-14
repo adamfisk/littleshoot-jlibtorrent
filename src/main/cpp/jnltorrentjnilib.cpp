@@ -129,6 +129,36 @@ class session : private boost::noncopyable
 			return handle;
 		}
 	
+	libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
+	{
+		using namespace libtorrent;
+		string stringPath = torrentPath;
+		TorrentPathToDownloadHandle::const_iterator iter = 
+		m_torrent_path_to_handle.find(stringPath);
+		if (iter != m_torrent_path_to_handle.end())
+		{
+			std::cout << "Found torrent" << std::endl;
+			torrent_handle th = iter->second;
+			
+			if (!th.has_metadata()) 
+			{
+				cerr << "No metadata for torrent" << endl;
+				return torrent_handle();
+			}
+			if (!th.is_valid()) 
+			{
+				cerr << "Torrent not valid" << endl; 
+				return torrent_handle();
+			}
+			return th;
+		}
+		else
+		{
+			cerr << "No handle for torrent" << endl;
+			return torrent_handle();
+		}
+	}
+	
 		long get_index_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
@@ -150,7 +180,8 @@ class session : private boost::noncopyable
 					cerr << "Torrent not valid" << endl; 
 					return -1;
 				}
-				torrent_status status = th.status();
+				const torrent_info ti = th.get_torrent_info();
+				const torrent_status status = th.status();
 				
 				sha1_hash sha1 = th.info_hash();
 				
@@ -168,7 +199,7 @@ class session : private boost::noncopyable
 					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
 					return -1;
 				}
-				unsigned int numPieces = status.pieces.size();
+				const unsigned int numPieces = status.pieces.size();
 				std::cout << "Num pieces is: " << numPieces << std::endl;
 				for (unsigned int j = index; j < numPieces; j++)
 				{
@@ -183,10 +214,20 @@ class session : private boost::noncopyable
 						std::cout << "Setting index to: " << j << std::endl;
 						m_piece_to_index_map[sha1] = j;
 						
-						cout << "Returning index: " << j << endl;
-						return j;
+						cout << "index: " << j << endl;
+						cout << "piece length is: " << ti.piece_length() << endl;
+						cout << "num pieces is: " << ti.num_pieces() << endl;
+						
+						if (j == 0) return 0;
+						
+						const unsigned long maxByte = (j-1) * ti.piece_length();
+						
+						cout << "max byte is: " << maxByte << endl;
+
+						return maxByte;
 					}
 				}
+				return (index - 1)  * ti.piece_length();
 			}
 			else
 			{
@@ -194,6 +235,16 @@ class session : private boost::noncopyable
 				std::cerr << "No torrent found at " << torrentPath << std::endl;
 				return -1;
 			}
+		}
+	
+		boost::filesystem::path get_save_path_for_torrent(const char* torrentPath)
+		{
+			using namespace libtorrent;
+			torrent_handle th = get_torrent_for_path(torrentPath);
+			const torrent_info ti = th.get_torrent_info();
+			//torrent_info ti = th.
+			const file_entry fe = ti.file_at(0);
+			return fe.path;
 		}
         
         boost::shared_ptr<libtorrent::session> & get_session()
@@ -541,6 +592,24 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return index;	
+}
+
+JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1for_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+)
+{
+	std::cout << "Got download call from Java with data:" << arg << std::endl;
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		return NULL; /* OutOfMemoryError already thrown */
+	}
+	
+	boost::filesystem::path path = session::instance().get_save_path_for_torrent(torrentPath); 
+	const char * savePath = path.string().c_str();
+	
+	env->ReleaseStringUTFChars(arg, torrentPath);
+	return env->NewStringUTF(savePath);
 }
 
 
