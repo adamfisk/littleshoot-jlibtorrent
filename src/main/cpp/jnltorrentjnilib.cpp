@@ -111,22 +111,35 @@ class session : private boost::noncopyable
 			int ret = libtorrent::lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
 			if (ret != 0)
 			{
-				std::cerr << "invalid bencoding: " << ret << std::endl;
+				cerr << "invalid bencoding: " << ret << endl;
 				return libtorrent::torrent_handle();
 			}
 
-			std::cerr << "bencoding is valid!!: " << ret << std::endl;
+			cerr << "bencoding is valid!!: " << ret << endl;
 			libtorrent::add_torrent_params p;
 			p.save_path = "./";
-			p.ti = new libtorrent::torrent_info(e);
-			libtorrent::torrent_handle handle = m_session->add_torrent(p);
-			
-			std::cout << "Adding torrent path: " << torrentPath << std::endl;
-			
-			string stringPath = torrentPath;
-			m_torrent_path_to_handle.insert(
-				TorrentPathToDownloadHandle::value_type(stringPath, handle));
-			return handle;
+			try
+			{
+				p.ti = new libtorrent::torrent_info(e);
+				libtorrent::torrent_handle handle = m_session->add_torrent(p);
+				
+				if (!handle.is_valid())
+				{
+					cerr << "Torrent handle not valid!!" << endl;
+				}
+				
+				cout << "Adding torrent path to map: " << torrentPath << endl;
+				
+				string stringPath = torrentPath;
+				m_torrent_path_to_handle.insert(
+				    TorrentPathToDownloadHandle::value_type(stringPath, handle));
+				return handle;
+			}
+			catch (exception& e)
+			{
+				cerr << "Error adding torrent" << e.what() << endl;
+                return libtorrent::torrent_handle();
+			}
 		}
 	
 	libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
@@ -134,7 +147,7 @@ class session : private boost::noncopyable
 		using namespace libtorrent;
 		string stringPath = torrentPath;
 		TorrentPathToDownloadHandle::const_iterator iter = 
-		m_torrent_path_to_handle.find(stringPath);
+			m_torrent_path_to_handle.find(stringPath);
 		if (iter != m_torrent_path_to_handle.end())
 		{
 			std::cout << "Found torrent" << std::endl;
@@ -142,19 +155,19 @@ class session : private boost::noncopyable
 			
 			if (!th.has_metadata()) 
 			{
-				cerr << "No metadata for torrent" << endl;
+				cerr << "No metadata for torrent.  Returning invalid." << endl;
 				return torrent_handle();
 			}
 			if (!th.is_valid()) 
 			{
-				cerr << "Torrent not valid" << endl; 
+				cerr << "Torrent not valid.  Returning invalid." << endl; 
 				return torrent_handle();
 			}
 			return th;
 		}
 		else
 		{
-			cerr << "No handle for torrent" << endl;
+			cerr << "No handle for torrent! Returning invalid." << endl;
 			return torrent_handle();
 		}
 	}
@@ -622,7 +635,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1f
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	std::cout << "Got sae path request for torrent:" << torrentPath << std::endl;
+	std::cout << "Got save path request for torrent:" << torrentPath << std::endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;

@@ -93,7 +93,7 @@ public class JLibTorrent
         processEvents();
         }
     
-    public String getSavePath(File torrentFile)
+    public String getSavePath(final File torrentFile)
         {
         try
             {
