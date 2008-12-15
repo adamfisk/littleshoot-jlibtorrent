@@ -54,7 +54,7 @@ class session : private boost::noncopyable
             const boost::uint8_t version_minor = 1;
             const boost::uint8_t version_micro = 1;
         
-			const boost::uint16_t port = 43542;//(std::rand() % 65535);
+			const boost::uint16_t port = std::rand() % (65535 - 16383);
 
 			m_session.reset(new libtorrent::session(
                 libtorrent::fingerprint(
