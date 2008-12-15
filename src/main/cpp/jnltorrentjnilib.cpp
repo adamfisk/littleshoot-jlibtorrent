@@ -188,6 +188,8 @@ class session : private boost::noncopyable
 					return ti.total_size();
 				}
 				
+				cout << "Download rate: " << status.download_rate << endl;
+				
 				sha1_hash sha1 = th.info_hash();
 				
 				int index = 0;
@@ -265,9 +267,8 @@ class session : private boost::noncopyable
 		boost::filesystem::path get_save_path_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
-			torrent_handle th = get_torrent_for_path(torrentPath);
+			const torrent_handle th = get_torrent_for_path(torrentPath);
 			const torrent_info ti = th.get_torrent_info();
-			//torrent_info ti = th.
 			const file_entry fe = ti.file_at(0);
 			return fe.path;
 		}
@@ -275,11 +276,16 @@ class session : private boost::noncopyable
 		const int get_size_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
-			torrent_handle th = get_torrent_for_path(torrentPath);
+			const torrent_handle th = get_torrent_for_path(torrentPath);
 			const torrent_info ti = th.get_torrent_info();
-			//torrent_info ti = th.
-			//const file_entry fe = ti.file_at(0);
 			return ti.total_size();
+		}
+	
+		void remove_torrent(const char* torrentPath)
+		{
+			using namespace libtorrent;
+			const torrent_handle th = get_torrent_for_path(torrentPath);
+			m_session->remove_torrent(th);
 		}
         
         boost::shared_ptr<libtorrent::session> & get_session()
@@ -619,6 +625,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1f
 	std::cout << "Got sae path request for torrent:" << torrentPath << std::endl;
     if (!torrentPath)
     {
+		cerr << "Out of memory!!" << endl;
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
@@ -635,9 +642,10 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	std::cout << "Got sae path request for torrent:" << torrentPath << std::endl;
+	std::cout << "Got size request for torrent:" << torrentPath << std::endl;
     if (!torrentPath)
     {
+		cerr << "Out of memory!!" << endl;
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
@@ -648,3 +656,19 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 	return size;
 }
 
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+)
+{
+	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+	std::cout << "Got cancel request for torrent:" << torrentPath << std::endl;
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return; /* OutOfMemoryError already thrown */
+	}
+	
+	session::instance().remove_torrent(torrentPath); 
+	
+	env->ReleaseStringUTFChars(arg, torrentPath);
+}

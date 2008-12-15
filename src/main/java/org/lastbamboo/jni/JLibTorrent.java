@@ -2,36 +2,47 @@ package org.lastbamboo.jni;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
-
+/**
+ * Java wrapper class for calls to native lib torrent.
+ */
 public class JLibTorrent
     {
     
-    public JLibTorrent()
+    public JLibTorrent(final Collection<File> libFiles)
         {
-        final String libName = System.mapLibraryName("jnltorrent");
-        final File lib1 = new File (libName);
-        final File lsDir = new File(System.getProperty("user.home"), ".littleshoot");
-        final File lib2 = new File (lsDir, libName);
-        final File lib3 = new File (new File("../../lib"), libName);
-        
-        if (lib1.isFile())
+        boolean libLoaded = false;
+        for (final File lib : libFiles)
             {
-            System.load(lib1.getAbsolutePath());
+            if (lib.isFile())
+                {
+                System.load(lib.getAbsolutePath());
+                libLoaded = true;
+                break;
+                }
             }
-        else if (lib2.isFile())
-            {
-            System.load(lib2.getAbsolutePath());
-            }
-        else if (lib3.isFile())
-            {
-            System.load(lib3.getAbsolutePath());
-            }
-        else
+        if (!libLoaded)
             {
             System.loadLibrary("jnltorrent");
             }
-        
+        init();
+        }
+    
+    public JLibTorrent()
+        {
+        System.loadLibrary("jnltorrent");
+        init();
+        }
+    
+    public JLibTorrent(final String libraryPath)
+        {
+        System.load(libraryPath);
+        init();
+        }
+    
+    private void init()
+        {
         final Runnable hookRunner = new Runnable()
             {
             public void run()
@@ -44,11 +55,6 @@ public class JLibTorrent
         final Thread hook = new Thread(hookRunner, "LibTorrent-Shutdown-Thread");
         Runtime.getRuntime().addShutdownHook(hook);
         start();
-        }
-    
-    public JLibTorrent(final String libraryPath)
-        {
-        System.load(libraryPath);
         }
     
     public void download(final File torrentFile) throws IOException
@@ -111,16 +117,30 @@ public class JLibTorrent
             }
         catch (final IOException e)
             {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             }
         return -1L;
         }
+    
 
+    public void removeTorrent(final File torrentFile)
+        {
+        try
+            {
+            final String path = torrentFile.getCanonicalPath();
+            remove_torrent(path);
+            }
+        catch (final IOException e)
+            {
+            e.printStackTrace();
+            }
+        }
     
     private native long get_size_for_torrent(final String path);
 
     private native String get_save_path_for_torrent(final String path);
+    
+    private native void remove_torrent(final String path);
     
     native long get_max_byte_for_torrent(final String path);
     
