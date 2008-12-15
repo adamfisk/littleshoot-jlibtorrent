@@ -3,19 +3,15 @@ package org.lastbamboo.jni;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.SystemUtils;
-
 
 public class JLibTorrent
     {
     
     public JLibTorrent()
         {
-        System.out.println("Instance created");
-        
         final String libName = System.mapLibraryName("jnltorrent");
         final File lib1 = new File (libName);
-        final File lsDir = new File(SystemUtils.USER_HOME, ".littleshoot");
+        final File lsDir = new File(System.getProperty("user.home"), ".littleshoot");
         final File lib2 = new File (lsDir, libName);
         final File lib3 = new File (new File("../../lib"), libName);
         
@@ -35,6 +31,19 @@ public class JLibTorrent
             {
             System.loadLibrary("jnltorrent");
             }
+        
+        final Runnable hookRunner = new Runnable()
+            {
+            public void run()
+                {
+                System.out.println("Stopping LibTorrent...");
+                stop();
+                }
+            };
+        
+        final Thread hook = new Thread(hookRunner, "LibTorrent-Shutdown-Thread");
+        Runtime.getRuntime().addShutdownHook(hook);
+        start();
         }
     
     public JLibTorrent(final String libraryPath)
@@ -85,7 +94,7 @@ public class JLibTorrent
             final String path = torrentFile.getCanonicalPath();
             return get_save_path_for_torrent(path);
             }
-        catch (IOException e)
+        catch (final IOException e)
             {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -93,6 +102,24 @@ public class JLibTorrent
         return "";
         }
     
+    public long getSizeForTorrent(final File torrentFile)
+        {
+        try
+            {
+            final String path = torrentFile.getCanonicalPath();
+            return get_size_for_torrent(path);
+            }
+        catch (final IOException e)
+            {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            }
+        return -1L;
+        }
+
+    
+    private native long get_size_for_torrent(final String path);
+
     private native String get_save_path_for_torrent(final String path);
     
     native long get_max_byte_for_torrent(final String path);
@@ -114,6 +141,5 @@ public class JLibTorrent
     native int add_torrent(String torrentData, int size);
     
     native void processEvents();
-
 
     }
