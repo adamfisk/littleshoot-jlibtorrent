@@ -101,17 +101,18 @@ class session : private boost::noncopyable
             m_session.reset();
         }
 	
-		libtorrent::torrent_handle download_torrent(const char* torrentPath, int size)
+		const libtorrent::torrent_handle download_torrent(
+			const char* torrentPath, int size)
 		{
-			std::cout << "Building buffer of size: " << size << std::endl;
-			std::vector<char> buf(size);
-			std::ifstream(torrentPath, std::ios_base::binary).read(&buf[0], size);
+			cout << "Building buffer of size: " << size << endl;
+			vector<char> buf(size);
+			ifstream(torrentPath, ios_base::binary).read(&buf[0], size);
 			
 			libtorrent::lazy_entry e;
 			int ret = libtorrent::lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
 			if (ret != 0)
 			{
-				cerr << "invalid bencoding: " << ret << endl;
+				cerr << "Bad bencoding. Returning invalid handle." << ret << endl;
 				return libtorrent::torrent_handle();
 			}
 
@@ -133,6 +134,7 @@ class session : private boost::noncopyable
 				string stringPath = torrentPath;
 				m_torrent_path_to_handle.insert(
 				    TorrentPathToDownloadHandle::value_type(stringPath, handle));
+				handle.set_sequential_download(true);
 				return handle;
 			}
 			catch (exception& e)
@@ -261,6 +263,7 @@ class session : private boost::noncopyable
 		const torrent_status status = th.status();
 		const torrent_status::state_t s = status.state;
 		cout << "Found state: " << s << endl;
+		cout << "Sequential download: " << th.is_sequential_download();
 		if (s == torrent_status::finished)
 		{
 			cout << "Got finished state!!" << endl;
@@ -604,7 +607,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 		return -1; /* OutOfMemoryError already thrown */
 	}
 	
-	libtorrent::torrent_handle  handle = session::instance().download_torrent(
+	const libtorrent::torrent_handle  handle = session::instance().download_torrent(
         torrentPath, size
     );
 	
