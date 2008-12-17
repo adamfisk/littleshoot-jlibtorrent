@@ -42,8 +42,9 @@ public class JLibTorrentTest
         
         
         final String uri = "http://www.mininova.org/get/2077943";
+        final File savePath = new File(".").getAbsoluteFile();
         final File torrentFile = downloadTorrentFile(uri);
-        torrent.download(torrentFile);
+        torrent.download(savePath, torrentFile);
         
         
         for (int i = 0; i< 300; i++)
