@@ -86,12 +86,6 @@ class session : private boost::noncopyable
             m_session->set_settings(settings);
 
             m_session->add_extension(&libtorrent::create_ut_pex_plugin);
-            
-			
-			std::cout << "About to log alerts..." << std::endl;
-			//logAlerts();
-            sleep(10);
-			
 			m_status = m_session->status();
 			 
         }
@@ -144,35 +138,35 @@ class session : private boost::noncopyable
 			}
 		}
 	
-	libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
-	{
-		using namespace libtorrent;
-		string stringPath = torrentPath;
-		TorrentPathToDownloadHandle::const_iterator iter = 
-			m_torrent_path_to_handle.find(stringPath);
-		if (iter != m_torrent_path_to_handle.end())
-		{
-			std::cout << "Found torrent" << std::endl;
-			torrent_handle th = iter->second;
-			
-			if (!th.has_metadata()) 
-			{
-				cerr << "No metadata for torrent.  Returning invalid." << endl;
-				return torrent_handle();
-			}
-			if (!th.is_valid()) 
-			{
-				cerr << "Torrent not valid.  Returning invalid." << endl; 
-				return torrent_handle();
-			}
-			return th;
-		}
-		else
-		{
-			cerr << "No handle for torrent! Returning invalid." << endl;
-			return torrent_handle();
-		}
-	}
+        libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
+        {
+            using namespace libtorrent;
+            const string stringPath = torrentPath;
+            const TorrentPathToDownloadHandle::iterator iter = 
+                m_torrent_path_to_handle.find(stringPath);
+            if (iter != m_torrent_path_to_handle.end())
+            {
+                cout << "Found torrent" << endl;
+                const torrent_handle th = iter->second;
+                
+                if (!th.has_metadata()) 
+                {
+                    cerr << "No metadata for torrent.  Returning invalid." << endl;
+                    return torrent_handle();
+                }
+                if (!th.is_valid()) 
+                {
+                    cerr << "Torrent not valid.  Returning invalid." << endl; 
+                    return torrent_handle();
+                }
+                return th;
+            }
+            else
+            {
+                cerr << "No handle for torrent! Returning invalid." << endl;
+                return torrent_handle();
+            }
+        }
 	
 		const long get_index_for_torrent(const char* torrentPath)
 		{
@@ -253,33 +247,33 @@ class session : private boost::noncopyable
 			else
 			{
 				// We don't yet know about the torrent.  
-				std::cerr << "No torrent found at " << torrentPath << std::endl;
+				cerr << "No torrent found at " << torrentPath << endl;
 				return -1;
 			}
 		}
 	
-	const bool is_finished(const libtorrent::torrent_handle& th)
-	{
-		using namespace libtorrent;
-		const torrent_status status = th.status();
-		const torrent_status::state_t s = status.state;
-		cout << "Found state: " << s << endl;
-		cout << "Sequential download: " << th.is_sequential_download();
-		if (s == torrent_status::finished)
-		{
-			cout << "Got finished state!!" << endl;
-			return true;
-		} else if (s == torrent_status::seeding)
-		{
-			cout << "Got seeding state!!" << endl;
-			return true;
-		} else
-		{
-			cout << "Got other state!!" << endl;
-			return false;
-		}
-		
-	}
+        const bool is_finished(const libtorrent::torrent_handle& th)
+        {
+            using namespace libtorrent;
+            const torrent_status status = th.status();
+            const torrent_status::state_t s = status.state;
+            cout << "Found state: " << s << endl;
+            cout << "Sequential download: " << th.is_sequential_download();
+            if (s == torrent_status::finished)
+            {
+                cout << "Got finished state!!" << endl;
+                return true;
+            } else if (s == torrent_status::seeding)
+            {
+                cout << "Got seeding state!!" << endl;
+                return true;
+            } else
+            {
+                cout << "Got other state!!" << endl;
+                return false;
+            }
+            
+        }
 	
 		const boost::filesystem::path get_save_path_for_torrent(const char* torrentPath)
 		{
@@ -299,14 +293,14 @@ class session : private boost::noncopyable
 		}
 	
 	
-	const int get_state_for_torrent(const char* torrentPath)
-	{
-		using namespace libtorrent;
-		const torrent_handle th = get_torrent_for_path(torrentPath);
-		const torrent_status status = th.status();
-		return status.state;
-	}
-	
+        const int get_state_for_torrent(const char* torrentPath)
+        {
+            using namespace libtorrent;
+            const torrent_handle th = get_torrent_for_path(torrentPath);
+            const torrent_status status = th.status();
+            return status.state;
+        }
+        
 		void remove_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
