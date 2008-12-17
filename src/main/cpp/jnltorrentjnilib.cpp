@@ -125,7 +125,7 @@ class session : private boost::noncopyable
 				
 				cout << "Adding torrent path to map: " << torrentPath << endl;
 				
-				string stringPath = torrentPath;
+				const string stringPath = torrentPath;
 				m_torrent_path_to_handle.insert(
 				    TorrentPathToDownloadHandle::value_type(stringPath, handle));
 				handle.set_sequential_download(true);
@@ -308,7 +308,7 @@ class session : private boost::noncopyable
 			m_session->remove_torrent(th);
 		}
         
-        boost::shared_ptr<libtorrent::session> & get_session()
+        const boost::shared_ptr<libtorrent::session> & get_session()
         {
             return m_session;
         }
