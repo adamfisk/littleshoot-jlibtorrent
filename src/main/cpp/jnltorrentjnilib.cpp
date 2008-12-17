@@ -89,7 +89,7 @@ class session : private boost::noncopyable
             
 			
 			std::cout << "About to log alerts..." << std::endl;
-			logAlerts();
+			//logAlerts();
             sleep(10);
 			
 			m_status = m_session->status();
@@ -102,7 +102,7 @@ class session : private boost::noncopyable
         }
 	
 		const libtorrent::torrent_handle download_torrent(
-			const char* torrentPath, int size)
+			const char* incompleteDir, const char* torrentPath, int size)
 		{
 			cout << "Building buffer of size: " << size << endl;
 			vector<char> buf(size);
@@ -118,7 +118,7 @@ class session : private boost::noncopyable
 
 			cerr << "bencoding is valid!!: " << ret << endl;
 			libtorrent::add_torrent_params p;
-			p.save_path = "./";
+			p.save_path = incompleteDir;
 			try
 			{
 				p.ti = new libtorrent::torrent_info(e);
@@ -174,7 +174,7 @@ class session : private boost::noncopyable
 		}
 	}
 	
-		long get_index_for_torrent(const char* torrentPath)
+		const long get_index_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
 			string stringPath = torrentPath;
@@ -257,7 +257,7 @@ class session : private boost::noncopyable
 			}
 		}
 	
-	bool is_finished(const libtorrent::torrent_handle th)
+	const bool is_finished(const libtorrent::torrent_handle& th)
 	{
 		using namespace libtorrent;
 		const torrent_status status = th.status();
@@ -280,7 +280,7 @@ class session : private boost::noncopyable
 		
 	}
 	
-		boost::filesystem::path get_save_path_for_torrent(const char* torrentPath)
+		const boost::filesystem::path get_save_path_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
 			const torrent_handle th = get_torrent_for_path(torrentPath);
@@ -297,6 +297,15 @@ class session : private boost::noncopyable
 			return ti.total_size();
 		}
 	
+	
+	const int get_state_for_torrent(const char* torrentPath)
+	{
+		using namespace libtorrent;
+		const torrent_handle th = get_torrent_for_path(torrentPath);
+		const torrent_status status = th.status();
+		return status.state;
+	}
+	
 		void remove_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
@@ -308,229 +317,6 @@ class session : private boost::noncopyable
         {
             return m_session;
         }
-	
-	
-	std::string to_string(int v, int width)
-	{
-        std::stringstream s;
-        s.flags(std::ios_base::right);
-        s.width(width);
-        s.fill(' ');
-        s << v;
-        return s.str();
-	}
-	
-	std::string& to_string(float v, int width, int precision = 3)
-	{
-        // this is a silly optimization
-        // to avoid copying of strings
-        enum { num_strings = 20 };
-        static std::string buf[num_strings];
-        static int round_robin = 0;
-        std::string& ret = buf[round_robin];
-        ++round_robin;
-        if (round_robin >= num_strings) round_robin = 0;
-        ret.resize(20);
-        int size = std::sprintf(&ret[0], "%*.*f", width, precision, v);
-        ret.resize((std::min)(size, width));
-        return ret;
-	}
-	
-	std::string const& add_suffix(float val)
-	{
-        const char* prefix[] = {"kB", "MB", "GB", "TB"};
-        const int num_prefix = sizeof(prefix) / sizeof(const char*);
-        for (int i = 0; i < num_prefix; ++i)
-        {
-			val /= 1000.f;
-			if (fabs(val) < 1000.f)
-			{
-				std::string& ret = to_string(val, 4);
-				ret += prefix[i];
-				return ret;
-			}
-        }
-        std::string& ret = to_string(val, 4);
-        ret += "PB";
-        return ret;
-	}
-	
-	
-	char const* esc(char const* code)
-	{
-#ifdef ANSI_TERMINAL_COLORS
-        // this is a silly optimization
-        // to avoid copying of strings
-        enum { num_strings = 200 };
-        static char buf[num_strings][20];
-        static int round_robin = 0;
-        char* ret = buf[round_robin];
-        ++round_robin;
-        if (round_robin >= num_strings) round_robin = 0;
-        ret[0] = '\033';
-        ret[1] = '[';
-        int i = 2;
-        int j = 0;
-        while (code[j]) ret[i++] = code[j++];
-        ret[i++] = 'm';
-        ret[i++] = 0;
-        return ret;
-#else
-        return "";
-#endif
-	}
-
-	std::string const& progress_bar(float progress, int width, char const* code = "33")
-	{
-        static std::string bar;
-        bar.clear();
-        bar.reserve(width + 10);
-		
-        int progress_chars = static_cast<int>(progress * width + .5f);
-        bar = esc(code);
-        std::fill_n(std::back_inserter(bar), progress_chars, '#');
-        bar += esc("0");
-        std::fill_n(std::back_inserter(bar), width - progress_chars, '-');
-        return bar;
-	}
-	
-	void logAlerts()
-	{
-		using namespace libtorrent;
-		updateFiles();
-		std::vector<libtorrent::torrent_handle> handles = m_session->get_torrents();
-		
-		for (std::vector<libtorrent::torrent_handle>::iterator i = handles.begin();
-			 i != handles.end(); ++i)
-		{
-			libtorrent::torrent_handle& h = *i;
-			if (!h.has_metadata()) continue;
-			if (!h.is_valid()) continue;
-			torrent_status status = h.status();
-
-			std::vector<size_type> file_progress;
-			h.file_progress(file_progress);
-			libtorrent::torrent_info const& info = h.get_torrent_info();
-			std::cout << "SHA-1 for info: " << info.info_hash();
-			for (int i = 0; i < info.num_files(); ++i)
-			{
-				
-				float progress = info.file_at(i).size > 0
-					?float(file_progress[i]) / info.file_at(i).size:1;
-				if (file_progress[i] == info.file_at(i).size)
-					std::cout << progress_bar(1.f, 100, "32");
-				else
-					std::cout << progress_bar(progress, 100, "33");
-				std::cout << " " << to_string(progress * 100.f, 5) << "% "
-					<< add_suffix(file_progress[i]) << " "
-					<< info.file_at(i).path.leaf() << "\n";
-			}	
-		}
-		//float downloadRate = m_status.download_rate;
-		//std::cout << "Download rate: " << downloadRate << std::endl;		
-		
-		std::auto_ptr<libtorrent::alert> a = m_session->pop_alert();
-		
-		std::cout << "Popped alert!" << std::endl;
-		while (a.get()) {
-			std::cout << "Got some alert!" << std::endl;
-			if (libtorrent::torrent_finished_alert* p = dynamic_cast<libtorrent::torrent_finished_alert*>(a.get())) {
-				if (p->handle.is_valid()) {
-					std::cout << "torrent finished" << std::endl;
-				}
-				
-			} else if (libtorrent::peer_error_alert* p = dynamic_cast<libtorrent::peer_error_alert*>(a.get())) {
-				std::cout << "peer error" << std::endl;
-				
-			} else if (libtorrent::invalid_request_alert* p = dynamic_cast<libtorrent::invalid_request_alert*>(a.get())) {
-				std::cout << "invalid request!" << std::endl;
-			} else if (libtorrent::tracker_error_alert * p = dynamic_cast<libtorrent::tracker_error_alert *>(a.get())) {
-				std::cout << "tracker error!" << std::endl;
-				if (p->handle.is_valid()) {
-					switch (p->status_code) { 
-						case 404:
-						case 401: {
-						}
-							break;
-						default:
-							break;
-					}
-				}
-			} else if (libtorrent::tracker_warning_alert * p = dynamic_cast<libtorrent::tracker_warning_alert *>(a.get())) { 
-				
-				if (p->handle.is_valid()) {
-					std::cout << "tracker warning" << std::endl;
-				}
-				
-			} else if (libtorrent::tracker_announce_alert * p = dynamic_cast<libtorrent::tracker_announce_alert *>(a.get())) { 
-				
-				if (p->handle.is_valid()) {
-					std::cout << "tracker announce" << std::endl;
-				}
-				
-			} else if (libtorrent::tracker_reply_alert * p = dynamic_cast<libtorrent::tracker_reply_alert *>(a.get())) {
-				if (p->handle.is_valid()) {
-					std::cout << "tracker reply" << std::endl;
-				}
-			} else if (libtorrent::portmap_alert * p = dynamic_cast<libtorrent::portmap_alert *>(a.get())) {
-				std::cout << "portmap alert" << std::endl;
-			} else {
-				std::cout << "unknown alert" << std::endl;
-			}
-			
-			a = m_session->pop_alert();
-			
-		}
-	}
-	
-	void updateFiles() 
-	{
-		using namespace libtorrent;
-		std::vector<torrent_handle> handles = m_session->get_torrents();
-		
-		for (std::vector<torrent_handle>::iterator i = handles.begin();
-			 i != handles.end(); ++i)
-		{
-			torrent_handle& h = *i;
-			if (!h.has_metadata()) continue;
-			if (!h.is_valid()) continue;
-			torrent_status status = h.status();
-			
-			sha1_hash sha1 = h.info_hash();
-			
-			int index = 0;
-			InfoHashToIndexMap::const_iterator iter = m_piece_to_index_map.find(sha1);
-			if (iter != m_piece_to_index_map.end())
-			{
-				index = iter->second;
-				std::cout << "Found existing index: " << index << std::endl;
-			}
-			else
-			{
-				// We don't yet know about the torrent.  Set its start index
-				// to 0.
-				std::cout << "We didn't find the index. Setting start index to 0. " << std::endl;
-				m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
-			}
-			unsigned int numPieces = status.pieces.size();
-			std::cout << "Num pieces is: " << numPieces << std::endl;
-			for (unsigned int j = index; j < numPieces; j++)
-			{
-				if (status.pieces[j])
-				{
-					std::cout << "Found piece at index: " << j << std::endl;
-					// We have this piece -- stream it.
-				} else
-				{
-					// We do not have this piece -- set the index and
-					// break.
-					std::cout << "Setting index to: " << j << std::endl;
-					m_piece_to_index_map[sha1] = j;
-					break;
-				}
-			}
-		}
-	}
     
     private:
     
@@ -592,13 +378,14 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_download_1torrent(
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_processEvents(JNIEnv * env, jobject obj)
 {
     // Perfrom any event processing here.
-    session::instance().logAlerts();
+    //session::instance().logAlerts();
 }
 
-JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
-    JNIEnv * env, jobject obj, jstring arg, jint size
+JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
+    JNIEnv * env, jobject obj, jstring jIncompleteDir, jstring arg, jint size
     )
 {
+    const char * incompleteDir = env->GetStringUTFChars(jIncompleteDir, JNI_FALSE);
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
 	std::cout << "Got download call from Java for path:" << torrentPath << std::endl;
     if (!torrentPath)
@@ -607,11 +394,12 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 		return -1; /* OutOfMemoryError already thrown */
 	}
 	
-	const libtorrent::torrent_handle  handle = session::instance().download_torrent(
-        torrentPath, size
+	const libtorrent::torrent_handle handle = session::instance().download_torrent(
+        incompleteDir, torrentPath, size
     );
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
+	env->ReleaseStringUTFChars(arg, incompleteDir);
 	return 0;
 }
 
@@ -677,7 +465,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	std::cout << "Got cancel request for torrent:" << torrentPath << std::endl;
+	cout << "Got cancel request for torrent:" << torrentPath << endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -687,4 +475,22 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
 	session::instance().remove_torrent(torrentPath); 
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
+}
+
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torrent(
+	JNIEnv * env, jobject obj, jstring arg
+)
+{
+	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+	cout << "Got cancel request for torrent:" << torrentPath << endl;
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return NULL; /* OutOfMemoryError already thrown */
+	}
+	
+	const int state = session::instance().get_state_for_torrent(torrentPath); 
+	
+	env->ReleaseStringUTFChars(arg, torrentPath);
+	return state;
 }

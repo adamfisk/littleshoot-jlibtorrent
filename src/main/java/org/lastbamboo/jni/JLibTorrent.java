@@ -57,9 +57,10 @@ public class JLibTorrent
         start();
         }
     
-    public void download(final File torrentFile) throws IOException
+    public void download(final File incompleteDir, File torrentFile) throws IOException
         {
-        add_torrent(torrentFile.getCanonicalPath(), (int) torrentFile.length());
+        final long handle = add_torrent(incompleteDir.getCanonicalPath(), 
+            torrentFile.getCanonicalPath(), (int) torrentFile.length());
         }
 
 
@@ -136,6 +137,22 @@ public class JLibTorrent
             }
         }
     
+    public int getStateForTorrent(final File torrentFile)
+        {
+        try
+            {
+            final String path = torrentFile.getCanonicalPath();
+            return get_state_for_torrent(path);
+            }
+        catch (final IOException e)
+            {
+            e.printStackTrace();
+            }
+        return -1;
+        }
+    
+    private native int get_state_for_torrent(final String path);
+    
     private native long get_size_for_torrent(final String path);
 
     private native String get_save_path_for_torrent(final String path);
@@ -158,7 +175,7 @@ public class JLibTorrent
     
     native void download_torrent(String url);
     
-    native int add_torrent(String torrentData, int size);
+    native long add_torrent(String incompletePath, String torrentPath, int size);
     
     native void processEvents();
 
