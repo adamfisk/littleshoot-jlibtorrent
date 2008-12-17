@@ -29,8 +29,8 @@
 
 using namespace std;
 
-typedef std::map<string, libtorrent::torrent_handle> TorrentPathToDownloadHandle;
-typedef std::map<libtorrent::sha1_hash, int> InfoHashToIndexMap;
+typedef map<const string, const libtorrent::torrent_handle> TorrentPathToDownloadHandle;
+typedef map<const libtorrent::sha1_hash, const unsigned int> InfoHashToIndexMap;
 
 
 /**
@@ -177,13 +177,13 @@ class session : private boost::noncopyable
 		const long get_index_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
-			string stringPath = torrentPath;
-			TorrentPathToDownloadHandle::const_iterator iter = 
+			const string stringPath = torrentPath;
+			const TorrentPathToDownloadHandle::iterator iter = 
 				m_torrent_path_to_handle.find(stringPath);
 			if (iter != m_torrent_path_to_handle.end())
 			{
-				std::cout << "Found torrent" << std::endl;
-				torrent_handle th = iter->second;
+				cout << "Found torrent" << endl;
+				const torrent_handle th = iter->second;
 				
 				if (!th.has_metadata()) 
 				{
@@ -205,10 +205,10 @@ class session : private boost::noncopyable
 				
 				cout << "Download rate: " << status.download_rate << endl;
 				
-				sha1_hash sha1 = th.info_hash();
+				const sha1_hash sha1 = th.info_hash();
 				
 				int index = 0;
-				InfoHashToIndexMap::const_iterator iter = m_piece_to_index_map.find(sha1);
+				const InfoHashToIndexMap::iterator iter = m_piece_to_index_map.find(sha1);
 				if (iter != m_piece_to_index_map.end())
 				{
 					index = iter->second;
@@ -222,19 +222,20 @@ class session : private boost::noncopyable
 					return -1;
 				}
 				const unsigned int numPieces = status.pieces.size();
-				std::cout << "Num pieces is: " << numPieces << std::endl;
+				cout << "Num pieces is: " << numPieces << endl;
 				for (unsigned int j = index; j < numPieces; j++)
 				{
 					if (status.pieces[j])
 					{
-						std::cout << "Found piece at index: " << j << std::endl;
+						cout << "Found piece at index: " << j << endl;
 						// We have this piece -- stream it.
 					} else
 					{
 						// We do not have this piece -- set the index and
 						// break.
-						std::cout << "Setting index to: " << j << std::endl;
-						m_piece_to_index_map[sha1] = j;
+						cout << "Setting index to: " << j << endl;
+						//m_piece_to_index_map[sha1] = j;
+						m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, j));
 						
 						cout << "index: " << j << endl;
 						cout << "piece length is: " << ti.piece_length() << endl;
