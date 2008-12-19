@@ -89,11 +89,6 @@ public class JLibTorrent
         stop();
         }
     
-    public void udpateFileData()
-        {
-        processEvents();
-        }
-    
     public String getSavePath(final File torrentFile)
         {
         try
@@ -151,32 +146,67 @@ public class JLibTorrent
         return -1;
         }
     
+    public String getName(final File torrentFile) throws IOException
+        {
+        final String path = torrentFile.getCanonicalPath();
+        return get_name_for_torrent(path);
+        }
+    
+    public int getNumFiles(final File torrentFile) throws IOException
+        {
+        final String path = torrentFile.getCanonicalPath();
+        return get_num_files_for_torrent(path);
+        }
+
+    public double getDownloadSpeed(final File torrentFile) throws IOException
+        {
+        final String path = torrentFile.getCanonicalPath();
+        return get_speed_for_torrent(path);
+        }
+    
+    public int getNumHosts(final File torrentFile) throws IOException
+        {
+        final String path = torrentFile.getCanonicalPath();
+        return get_num_peers_for_torrent(path);
+        }
+    
+    public long getBytesRead(final File torrentFile) throws IOException
+        {
+        final String path = torrentFile.getCanonicalPath();
+        return get_bytes_read_for_torrent(path);
+        }
+    
+    private native long get_bytes_read_for_torrent(final String path);
+    
+    private native int get_num_peers_for_torrent(final String path);
+    
+    private native double get_speed_for_torrent(final String path);
+
+    private native int get_num_files_for_torrent(final String path);
+    
     private native int get_state_for_torrent(final String path);
     
     private native long get_size_for_torrent(final String path);
 
+    private native String get_name_for_torrent(final String path);
+    
     private native String get_save_path_for_torrent(final String path);
     
     private native void remove_torrent(final String path);
     
-    native long get_max_byte_for_torrent(final String path);
+    private native long get_max_byte_for_torrent(final String path);
     
     /**
      * Initialize the libtorrent core.
      */
-    native void start();
+    private native void start();
     
     /**
      * Shuts down the libtorrent core.
      */
-    native void stop();
+    private native void stop();
+    
+    private native long add_torrent(String incompletePath, String torrentPath, int size);
 
-    native int get_torrent_handle(String srg);
     
-    native void download_torrent(String url);
-    
-    native long add_torrent(String incompletePath, String torrentPath, int size);
-    
-    native void processEvents();
-
     }

@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.httpclient.Header;
@@ -16,7 +15,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Test;
 import org.lastbamboo.common.util.DefaultHttpClient;
 import org.lastbamboo.common.util.DefaultHttpClientImpl;
 import org.slf4j.Logger;
@@ -38,11 +36,9 @@ public class JLibTorrentTest
         
         final String fullPath = fullFile.getCanonicalPath();
         final JLibTorrent torrent = new JLibTorrent(fullPath);
-        torrent.start();
-        
         
         final String uri = "http://www.mininova.org/get/2077943";
-        final File savePath = new File(".").getAbsoluteFile();
+        final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
         torrent.download(savePath, torrentFile);
         
@@ -50,13 +46,12 @@ public class JLibTorrentTest
         for (int i = 0; i< 300; i++)
             {
             System.out.println("Calling process events");
-            torrent.processEvents();
+            //torrent.processEvents();
             
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
             }
 
         System.out.println("Stopping torrent...");
-        torrent.stop();
         }
     
     private File downloadTorrentFile(final String uri) throws IOException
