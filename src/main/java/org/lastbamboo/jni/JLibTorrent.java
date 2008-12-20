@@ -89,33 +89,16 @@ public class JLibTorrent
         stop();
         }
     
-    public String getSavePath(final File torrentFile)
+    public String getFullSavePath(final File torrentFile) throws IOException
         {
-        try
-            {
-            final String path = torrentFile.getCanonicalPath();
-            return get_save_path_for_torrent(path);
-            }
-        catch (final IOException e)
-            {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            }
-        return "";
+        final String path = torrentFile.getCanonicalPath();
+        return get_save_path_for_torrent(path);
         }
     
-    public long getSizeForTorrent(final File torrentFile)
+    public long getSizeForTorrent(final File torrentFile) throws IOException
         {
-        try
-            {
-            final String path = torrentFile.getCanonicalPath();
-            return get_size_for_torrent(path);
-            }
-        catch (final IOException e)
-            {
-            e.printStackTrace();
-            }
-        return -1L;
+        final String path = torrentFile.getCanonicalPath();
+        return get_size_for_torrent(path);
         }
     
 

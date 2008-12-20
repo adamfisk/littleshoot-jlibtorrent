@@ -88,9 +88,7 @@ class session : private boost::noncopyable
 			
             m_session->set_settings(settings);
 
-            m_session->add_extension(&libtorrent::create_ut_pex_plugin);
-			m_status = m_session->status();
-			 
+            m_session->add_extension(&libtorrent::create_ut_pex_plugin);			 
         }
         
         void stop()
@@ -117,31 +115,24 @@ class session : private boost::noncopyable
 			libtorrent::add_torrent_params p;
 			p.save_path = incompleteDir;
             cout << "Save path for torrent is: " << incompleteDir << endl;
-			try
-			{
-				p.ti = new libtorrent::torrent_info(e);
-				libtorrent::torrent_handle handle = m_session->add_torrent(p);
-				
-				if (!handle.is_valid())
-				{
-					cerr << "Torrent handle not valid!!" << endl;
-				}
-				
-				cout << "Adding torrent path to map: " << torrentPath << endl;
-				
-				const string stringPath = torrentPath;
-				m_torrent_path_to_handle.insert(
-				    TorrentPathToDownloadHandle::value_type(stringPath, handle));
-				handle.set_sequential_download(true);
-                
-                cout << "Torrent name: " << handle.name() << endl;
-				return handle;
-			}
-			catch (exception& e)
-			{
-				cerr << "Error adding torrent" << e.what() << endl;
-                return libtorrent::torrent_handle();
-			}
+
+            p.ti = new libtorrent::torrent_info(e);
+            libtorrent::torrent_handle handle = m_session->add_torrent(p);
+            
+            if (!handle.is_valid())
+            {
+                cerr << "Torrent handle not valid!!" << endl;
+            }
+            
+            cout << "Adding torrent path to map: " << torrentPath << endl;
+            
+            const string stringPath = torrentPath;
+            m_torrent_path_to_handle.insert(
+                TorrentPathToDownloadHandle::value_type(stringPath, handle));
+            handle.set_sequential_download(true);
+            
+            cout << "Torrent name: " << handle.name() << endl;
+            return handle;
 		}
 	
         libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
@@ -247,7 +238,7 @@ class session : private boost::noncopyable
 						return maxByte;
 					}
 				}
-				return (index - 1)  * ti.piece_length();
+				return index * ti.piece_length();
 			}
 			else
 			{
@@ -280,7 +271,7 @@ class session : private boost::noncopyable
             
         }
         
-		const boost::filesystem::path get_save_path_for_torrent(const char* torrentPath) 
+		const boost::filesystem::path get_full_save_path_for_torrent(const char* torrentPath) 
 		{
 			using namespace libtorrent;
 			const torrent_handle th = get_torrent_for_path(torrentPath);
@@ -288,13 +279,15 @@ class session : private boost::noncopyable
             boost::filesystem::path path;
             if (ti.num_files() == 1)
             {
-                cout << "get_save_path_for_torrent::returning path for a single file..." << endl;
+                cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
                 const file_entry fe = ti.file_at(0);
+                // TODO: This is not right -- doesn't give the absolute path.
                 path = fe.path;
             }
             else
             {
-                cout << "get_save_path_for_torrent::returning directory path..." << endl;
+                cout << "get_full_save_path_for_torrent::returning directory path..." << endl;
+                // TODO: This is not right -- doesn't give the absolute path.
                 path = boost::filesystem::path(th.name());
             }
             
@@ -372,8 +365,6 @@ class session : private boost::noncopyable
     private:
     
         boost::shared_ptr<libtorrent::session> m_session;
-		int m_count;
-		libtorrent::session_status m_status;
 		InfoHashToIndexMap m_piece_to_index_map;
 		TorrentPathToDownloadHandle m_torrent_path_to_handle;
 		
@@ -458,7 +449,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1f
 	}
 	
 	boost::filesystem::path path = 
-		session::instance().get_save_path_for_torrent(torrentPath); 
+		session::instance().get_full_save_path_for_torrent(torrentPath); 
 	const char * savePath = path.string().c_str();
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
