@@ -254,7 +254,6 @@ class session : private boost::noncopyable
             const torrent_status status = th.status();
             const torrent_status::state_t s = status.state;
             cout << "Found state: " << s << endl;
-            cout << "Sequential download: " << th.is_sequential_download();
             if (s == torrent_status::finished)
             {
                 cout << "Got finished state!!" << endl;
@@ -301,9 +300,23 @@ class session : private boost::noncopyable
 			return path;
 		}
     
-        string const& get_name_for_torrent(const char* torrentPath) 
+        string const get_name_for_torrent(const char* torrentPath) 
         {
-            return info(torrentPath).name();
+            using namespace libtorrent;
+            const torrent_info ti = info(torrentPath);
+            string name;
+            if (ti.num_files() == 1)
+            {
+                cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
+                const file_entry fe = ti.file_at(0);
+                // TODO: This is not right -- doesn't give the absolute path.
+                name = fe.path.file_string();
+            } else
+            {
+                name = ti.name();
+            }
+            
+            return name;
         }
 	
 		const long get_size_for_torrent(const char* torrentPath) 
