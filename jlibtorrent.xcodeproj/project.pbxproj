@@ -126,6 +126,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = "";
+				SDKROOT = macosx10.4;
 				ZERO_LINK = NO;
 			};
 			name = Debug;
@@ -133,7 +134,10 @@
 		4CEBA75E08679E4D0015D03E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_VERSION = 4.0;
 				HEADER_SEARCH_PATHS = "";
+				SDKROOT = macosx10.4;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -162,11 +166,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/debug\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/debug/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
@@ -221,11 +225,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/release/architecture-combined/link-static/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/release/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/release/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/release/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/release/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/release/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
