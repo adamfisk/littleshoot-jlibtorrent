@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
     <version>1.0</version>
     <name>LibTorrent JNI Binding for Java</name>
-    <description>LittleShoot Labs JNI Binding for Java</description>
+    <description>LittleShoot Labs LibTorrent JNI Binding for Java</description>
 
     <parent>
         <groupId>org.lastbamboo</groupId>
