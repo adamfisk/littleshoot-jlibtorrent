@@ -99,8 +99,8 @@
         -->
     </target>
 	
-	<target name="copyMac" if="isMac"> 
-		<echo>"Copying prop file on mac"</echo>
+    <target name="copyMac" if="isMac"> 
+        <echo>"Copying prop file on mac"</echo>
         <copy file="${curr_build_dir}/libjnltorrent.jnilib" toDir="${littleshoot.libs}" failonerror="true" verbose="true"/>
     </target>
 
