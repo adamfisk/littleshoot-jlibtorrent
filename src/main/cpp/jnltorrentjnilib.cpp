@@ -272,6 +272,7 @@ class session : private boost::noncopyable
         
 		const boost::filesystem::path get_full_save_path_for_torrent(const char* torrentPath) 
 		{
+            /*
 			using namespace libtorrent;
 			const torrent_handle th = get_torrent_for_path(torrentPath);
             const torrent_info ti = th.get_torrent_info();
@@ -298,6 +299,8 @@ class session : private boost::noncopyable
             cout << "is dir: " << dir << endl;
             cout << "is reg: " << reg << endl;
 			return path;
+             */
+            return NULL;
 		}
     
         string const get_name_for_torrent(const char* torrentPath) 
@@ -309,7 +312,6 @@ class session : private boost::noncopyable
             {
                 cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
                 const file_entry fe = ti.file_at(0);
-                // TODO: This is not right -- doesn't give the absolute path.
                 name = fe.path.file_string();
             } else
             {
@@ -319,7 +321,7 @@ class session : private boost::noncopyable
             return name;
         }
 	
-		const long get_size_for_torrent(const char* torrentPath) 
+        const libtorrent::size_type get_size_for_torrent(const char* torrentPath) 
 		{
 			return info(torrentPath).total_size();
 		}
@@ -348,7 +350,20 @@ class session : private boost::noncopyable
         {
             return info(torrentPath).num_files();
         }
-        
+    
+        const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
+        {
+            const libtorrent::torrent_handle th = 
+                get_torrent_for_path(torrentPath);
+            const boost::filesystem::path savePath = th.save_path();
+            const boost::filesystem::path tempDir = savePath.parent_path();
+            const boost::filesystem::path incompleteDir = tempDir.parent_path();
+            const boost::filesystem::path sharedDir = incompleteDir.parent_path();
+            const boost::filesystem::path downloadsDir(sharedDir / "downloads");
+            th.move_storage(downloadsDir);
+            return downloadsDir;
+        }
+    
 		void remove_torrent(const char* torrentPath) 
 		{
 			using namespace libtorrent;
@@ -504,7 +519,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
-	const long size = 
+	const libtorrent::size_type size = 
 		session::instance().get_size_for_torrent(torrentPath); 
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
@@ -636,4 +651,27 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
     cout << "Speed: " << downloadRate << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return downloadRate;
+}
+
+JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
+    JNIEnv * env, jobject obj, jstring arg)
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+	cout << "Got speed request for torrent:" << torrentPath << endl;
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return NULL; /* OutOfMemoryError already thrown */
+	}
+    
+    const boost::filesystem::path newPath = 
+        session::instance().move_to_downloads_dir(torrentPath);
+    
+    const char * savePath = newPath.string().c_str();
+	
+	env->ReleaseStringUTFChars(arg, torrentPath);
+    cout << "Returning path..." << savePath << endl;
+	const jstring finalPath = env->NewStringUTF(savePath);
+
+	return finalPath;
 }

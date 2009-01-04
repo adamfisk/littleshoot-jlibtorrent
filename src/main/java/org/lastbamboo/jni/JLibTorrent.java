@@ -57,26 +57,24 @@ public class JLibTorrent
         start();
         }
     
-    public void download(final File incompleteDir, File torrentFile) throws IOException
+    public void download(final File incompleteDir, final File torrentFile) 
+        throws IOException 
+       
         {
         final long handle = add_torrent(incompleteDir.getCanonicalPath(), 
             torrentFile.getCanonicalPath(), (int) torrentFile.length());
         }
-
+    
+    public String moveToDownloadsDir(final File torrentFile)
+        {
+        final String path = normalizePath(torrentFile);
+        return move_to_downloads_dir(path);
+        }
 
     public long getMaxByteForTorrent(final File torrentFile)
         {
-        try
-            {
-            final String path = torrentFile.getCanonicalPath();
-            return get_max_byte_for_torrent(path);
-            }
-        catch (IOException e)
-            {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            }
-        return -1;
+        final String path = normalizePath(torrentFile);
+        return get_max_byte_for_torrent(path);
         }
     
     public void startSession()
@@ -89,75 +87,74 @@ public class JLibTorrent
         stop();
         }
     
-    public String getFullSavePath(final File torrentFile) throws IOException
+    public String getFullSavePath(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_save_path_for_torrent(path);
         }
     
-    public long getSizeForTorrent(final File torrentFile) throws IOException
+    public long getSizeForTorrent(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_size_for_torrent(path);
         }
     
 
     public void removeTorrent(final File torrentFile)
         {
-        try
-            {
-            final String path = torrentFile.getCanonicalPath();
-            remove_torrent(path);
-            }
-        catch (final IOException e)
-            {
-            e.printStackTrace();
-            }
+        final String path = normalizePath(torrentFile);
+        remove_torrent(path);
         }
     
     public int getStateForTorrent(final File torrentFile)
         {
-        try
-            {
-            final String path = torrentFile.getCanonicalPath();
-            return get_state_for_torrent(path);
-            }
-        catch (final IOException e)
-            {
-            e.printStackTrace();
-            }
-        return -1;
+        final String path = normalizePath(torrentFile);
+        return get_state_for_torrent(path);
         }
     
-    public String getName(final File torrentFile) throws IOException
+    public String getName(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_name_for_torrent(path);
         }
     
-    public int getNumFiles(final File torrentFile) throws IOException
+    public int getNumFiles(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_num_files_for_torrent(path);
         }
 
-    public double getDownloadSpeed(final File torrentFile) throws IOException
+    public double getDownloadSpeed(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_speed_for_torrent(path);
         }
     
-    public int getNumHosts(final File torrentFile) throws IOException
+    public int getNumHosts(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_num_peers_for_torrent(path);
         }
     
-    public long getBytesRead(final File torrentFile) throws IOException
+    public long getBytesRead(final File torrentFile)
         {
-        final String path = torrentFile.getCanonicalPath();
+        final String path = normalizePath(torrentFile);
         return get_bytes_read_for_torrent(path);
         }
+    
+    private final String normalizePath(final File torrentFile)
+        {
+        try
+            {
+            return torrentFile.getCanonicalPath();
+            }
+        catch (final IOException e)
+            {
+            return torrentFile.getAbsolutePath();
+            }
+        }
+    
+    private native String move_to_downloads_dir(final String path);
     
     private native long get_bytes_read_for_torrent(final String path);
     
@@ -189,7 +186,8 @@ public class JLibTorrent
      */
     private native void stop();
     
-    private native long add_torrent(String incompletePath, String torrentPath, int size);
+    private native long add_torrent(String incompletePath, String torrentPath, 
+        int size);
 
     
     }
