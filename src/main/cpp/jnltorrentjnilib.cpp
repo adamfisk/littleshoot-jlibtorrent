@@ -657,7 +657,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1download
     JNIEnv * env, jobject obj, jstring arg)
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got speed request for torrent:" << torrentPath << endl;
+	cout << "Moving torrent to downloads dir:" << torrentPath << endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
