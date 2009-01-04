@@ -356,10 +356,11 @@ class session : private boost::noncopyable
             const libtorrent::torrent_handle th = 
                 get_torrent_for_path(torrentPath);
             const boost::filesystem::path savePath = th.save_path();
+            cout << "Save path is: " << savePath.string() << endl;
             const boost::filesystem::path tempDir = savePath.parent_path();
             const boost::filesystem::path incompleteDir = tempDir.parent_path();
-            const boost::filesystem::path sharedDir = incompleteDir.parent_path();
-            const boost::filesystem::path downloadsDir(sharedDir / "downloads");
+            //const boost::filesystem::path sharedDir = incompleteDir.parent_path();
+            const boost::filesystem::path downloadsDir(incompleteDir / "downloads");
             th.move_storage(downloadsDir);
             return downloadsDir;
         }
@@ -654,7 +655,8 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
 }
 
 JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
-    JNIEnv * env, jobject obj, jstring arg)
+    JNIEnv * env, jobject obj, jstring arg
+)
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
 	cout << "Moving torrent to downloads dir:" << torrentPath << endl;
