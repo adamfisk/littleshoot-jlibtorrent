@@ -87,11 +87,13 @@ public class JLibTorrent
         stop();
         }
     
+    /*
     public String getFullSavePath(final File torrentFile)
         {
         final String path = normalizePath(torrentFile);
         return get_save_path_for_torrent(path);
         }
+        */
     
     public long getSizeForTorrent(final File torrentFile)
         {
