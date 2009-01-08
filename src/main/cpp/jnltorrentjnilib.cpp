@@ -23,18 +23,22 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/session_settings.hpp>
 #include <libtorrent/extensions/ut_pex.hpp>
-#include "libtorrent/bencode.hpp"
+#include <libtorrent/bencode.hpp>
 
 #include "org_lastbamboo_jni_JLibTorrent.h"
 
-#define jlong_to_ptr(a) ((void*)(uintptr_t)(a))
-#define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
-
 using namespace std;
 
-typedef map<const string, const libtorrent::torrent_handle> TorrentPathToDownloadHandle;
-typedef map<const libtorrent::sha1_hash, unsigned int> InfoHashToIndexMap;
+#define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
+#define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
+typedef std::map<
+    const std::string, const libtorrent::torrent_handle
+> TorrentPathToDownloadHandle;
+
+typedef std::map<
+    const libtorrent::sha1_hash, unsigned int
+> InfoHashToIndexMap;
 
 /**
  * This implements a libtorrent session interface via a thread safe, 
@@ -65,6 +69,8 @@ class session : private boost::noncopyable
                 version_micro % 10), std::make_pair(port, port + 100)
                 )
             );
+            
+#if 0 // Enable DHT
 			
 			m_session->start_dht();
             
@@ -79,6 +85,7 @@ class session : private boost::noncopyable
 			m_session->add_dht_router(std::make_pair(
                 std::string("router.bitcomet.com"), 6881)
             );
+#endif
 
 			libtorrent::session_settings settings;
 
