@@ -29,11 +29,6 @@ public class JLibTorrentTest
     
     @Test public void testTorrent() throws Exception
         {
-        
-        if (true)
-            {
-            return;
-            }
         //final File pwd = new File("./src/main/resources");
         final File pwd = new File("../../lib");
         
@@ -52,9 +47,9 @@ public class JLibTorrentTest
         for (int i = 0; i< 300; i++)
             {
             System.out.println("Calling process events");
-            //torrent.processEvents();
-            
-            //Thread.sleep(1000);
+            final int state = 
+                torrent.getStateForTorrent(torrentFile);
+            m_log.debug("In state: " + state);
             }
 
         System.out.println("Stopping torrent...");
