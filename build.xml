@@ -57,7 +57,7 @@
     <target name="javah" depends="init" description="Create headers.">
         
         <!-- generate the header files -->
-        <exec executable="/usr/bin/javah">
+        <exec executable="javah">
             <arg line="-classpath ./target/classes -force -d '${curr_header_dir}' org.lastbamboo.jni.JLibTorrent"/>
         </exec>
     </target>
