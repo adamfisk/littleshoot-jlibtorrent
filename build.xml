@@ -133,7 +133,7 @@
     </target>
 
     <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="nativelib" depends="javah, compileMac, compileWin, copyMac, copyWin"></target>
+    <target name="nativelib" depends="compileMac, compileWin, copyMac, copyWin"></target>
     	
     <!-- Note: this target requires that Xcode Tools be installed -->
     <target name="xcodebuild" depends="jar, compileMac, compileWin, copyMac, copyWin"></target>
