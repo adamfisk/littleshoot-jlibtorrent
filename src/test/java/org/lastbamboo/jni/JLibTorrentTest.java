@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Test;
 import org.lastbamboo.common.util.DefaultHttpClient;
 import org.lastbamboo.common.util.DefaultHttpClientImpl;
 import org.slf4j.Logger;
@@ -26,10 +27,15 @@ public class JLibTorrentTest
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
-    public void testTorrent() throws Exception
+    @Test public void testTorrent() throws Exception
         {
         
-        final File pwd = new File("./src/main/resources");
+        if (true)
+            {
+            return;
+            }
+        //final File pwd = new File("./src/main/resources");
+        final File pwd = new File("../../lib");
         
         final File fullFile = 
             new File (pwd.getCanonicalFile(), System.mapLibraryName("jnltorrent"));
