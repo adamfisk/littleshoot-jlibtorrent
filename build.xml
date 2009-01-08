@@ -94,34 +94,15 @@
             <arg line="-project ${native.project}"/>
             <arg line="-target ${native.target}"/>
         </exec>     
-    </target>
-
-    <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="compileWin" if="isWin">
-        <exec dir="." executable="cmd" os="Windows NT">
-            <arg line="/c compile.bat"/>
-        </exec>
-
-<!--    
-	<exec executable="cl">
-            <arg line="-I 'c:\program files\java\jdk1.6.0_11\include'"/>
-            <arg line="-I 'c:\program files\java\jdk1.6.0_11\include\win32'"/>
-            <arg line='-I"c:\boost"'/>
-            <arg line='-I "../../libtorrent/libtorrent/include"'/>
-            <arg line='-I "../../libtorrent/libtorrent/zlib"'/>
-            <arg line='-I "./build/headers"'/>
-            <arg line='-I"."'/>
-            <arg line='/LD'/>
-            <arg line='/MT'/>
-            <arg line='/EHsc'/>
-            <arg line='/W1'/>
-            <arg line='/TP'/>
-            <arg line='./src/main/cpp/jnltorrentjnilib.cpp'/>
-            <arg line='/Fe"jlibtorrent.dll"'/>
-        </exec>     
--->
+    	<!--
+        <copy file="${curr_build_dir}/${native.library}" toDir="${resources}" failonerror="true" verbose="true"/>
+        -->
     </target>
 	
+    <target name="compileWin" if="isWin">
+    	<echo>"Compiling on windows"</echo>
+    </target>
+
     <target name="copyMac" if="isMac"> 
         <echo>"Copying prop file on mac"</echo>
         <copy file="${curr_build_dir}/libjnltorrent.jnilib" toDir="${littleshoot.libs}" failonerror="true" verbose="true"/>
@@ -132,11 +113,13 @@
         <copy file="${curr_build_dir}/jnltorrent.dll" toDir="${littleshoot.libs}" failonerror="true" verbose="true"/>
     </target>
 
-    <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="nativelib" depends="compileMac, compileWin, copyMac, copyWin"></target>
-    	
-    <!-- Note: this target requires that Xcode Tools be installed -->
-    <target name="xcodebuild" depends="jar, compileMac, compileWin, copyMac, copyWin"></target>
+    <!-- Note: this target requires that Xcode Tools be installed 
+    <target name="nativelib" depends="javah, xcodecompile, copyMac, copyWin"></target>
+    -->
+    <target name="nativelib" depends="javah, compileMac, compileWin, copyMac, copyWin"></target>    	
+    
+     <!-- Note: this target requires that Xcode Tools be installed -->
+    <target name="xcodebuild" depends="jar, compileMac, copyMac, copyWin"></target>
     
     <!-- install target. Copy the built objects to the 'dist' directory. -->
     <target name="install" description="Install jar" depends="xcodebuild">
