@@ -118,6 +118,7 @@ class session : private boost::noncopyable
 
             p.ti = new libtorrent::torrent_info(e);
             libtorrent::torrent_handle handle = m_session->add_torrent(p);
+            handle.set_sequential_download(true);
             
             if (!handle.is_valid())
             {
@@ -129,7 +130,6 @@ class session : private boost::noncopyable
             const string stringPath = torrentPath;
             m_torrent_path_to_handle.insert(
                 TorrentPathToDownloadHandle::value_type(stringPath, handle));
-            handle.set_sequential_download(true);
             
             cout << "Torrent name: " << handle.name() << endl;
             return handle;
