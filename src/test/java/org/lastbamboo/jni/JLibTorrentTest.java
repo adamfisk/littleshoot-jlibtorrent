@@ -44,12 +44,13 @@ public class JLibTorrentTest
         torrent.download(savePath, torrentFile);
         
         
-        for (int i = 0; i< 300; i++)
+        for (int i = 0; i< 2; i++)
             {
             System.out.println("Calling process events");
             final int state = 
                 torrent.getStateForTorrent(torrentFile);
             m_log.debug("In state: " + state);
+            Thread.sleep(100);
             }
 
         System.out.println("Stopping torrent...");
