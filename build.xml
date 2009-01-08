@@ -101,6 +101,9 @@
 	
     <target name="compileWin" if="isWin">
     	<echo>"Compiling on windows"</echo>
+        <exec dir="." executable="cmd" os="Windows NT">
+            <arg line="/c compile.bat"/>
+        </exec>
     </target>
 
     <target name="copyMac" if="isMac"> 
