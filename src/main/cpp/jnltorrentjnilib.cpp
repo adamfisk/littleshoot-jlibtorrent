@@ -95,7 +95,9 @@ class session : private boost::noncopyable
 			
             m_session->set_settings(settings);
 
-            m_session->add_extension(&libtorrent::create_ut_pex_plugin);			 
+            m_session->add_extension(&libtorrent::create_ut_pex_plugin);	
+            
+            m_session->set_upload_rate_limit(1024 * 32);
         }
         
         void stop()
