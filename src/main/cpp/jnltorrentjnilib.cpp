@@ -155,9 +155,7 @@ class session : private boost::noncopyable
             
             // Sequential mode for single file torrents.
             
-            handle.set_sequential_download(
-                p.ti->files().total_size() == 1 ? true : false
-            );
+            handle.set_sequential_download(p.ti->files().num_files() == 1);
             
             if (!handle.is_valid())
             {
