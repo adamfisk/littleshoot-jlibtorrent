@@ -169,6 +169,7 @@ class session : private boost::noncopyable
                 deadline_timer_.async_wait(boost::bind(
                     &session::tick, this, boost::asio::placeholders::error)
                 );
+                pump_message_queue();
 #endif // ENABLE_MESSAGE_QUEUE
             }
             
