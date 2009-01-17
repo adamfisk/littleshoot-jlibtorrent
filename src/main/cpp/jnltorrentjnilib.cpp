@@ -109,6 +109,9 @@ class session : private boost::noncopyable
         
         void stop()
         {
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+            deadline_timer_.cancel();
+#endif // ENABLE_MESSAGE_QUEUE
             m_session.reset();
         }
 	
@@ -434,6 +437,33 @@ class session : private boost::noncopyable
         {
             return m_session;
         }
+        
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+        void pump_message_queue()
+        {
+            boost::system::error_code ec;
+            
+            try
+            {
+                io_service_.run_one(ec);
+                
+                if (ec)
+                {
+                    std::cout << 
+                        BOOST_CURRENT_FUNCTION << ": error(" << 
+                        ec.message() << ")." <<
+                    std::endl;
+                }
+            }
+            catch (std::exception & e)
+            {
+                std::cout << 
+                    BOOST_CURRENT_FUNCTION << ": caught(" << 
+                    e.what() << ")." <<
+                std::endl;
+            }
+        }
+#endif // ENABLE_MESSAGE_QUEUE
     
     private:
     
