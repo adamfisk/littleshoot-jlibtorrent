@@ -11,6 +11,7 @@
 #include <time.h>
 
 #include <boost/cstdint.hpp>
+#include <boost/current_function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/pool/detail/singleton.hpp>
@@ -32,6 +33,8 @@
 
 using namespace std;
 
+#define ENABLE_MESSAGE_QUEUE 1
+
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
@@ -50,6 +53,15 @@ typedef std::map<
 class session : private boost::noncopyable
 {
     public:
+    
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+        session()
+            : deadline_timer_(io_service_)
+        {
+        
+        }
+#endif // ENABLE_MESSAGE_QUEUE
+
     
         static session & instance() 
         {
@@ -146,6 +158,15 @@ class session : private boost::noncopyable
             if (!handle.is_valid())
             {
                 cerr << "Torrent handle not valid!!" << endl;
+            }
+            else
+            {
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+                deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
+                deadline_timer_.async_wait(boost::bind(
+                    &session::tick, this, boost::asio::placeholders::error)
+                );
+#endif // ENABLE_MESSAGE_QUEUE
             }
             
             cout << "Adding torrent path to map: " << torrentPath << endl;
@@ -416,14 +437,80 @@ class session : private boost::noncopyable
     
     private:
     
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+        void tick(const boost::system::error_code & ec)
+        {
+            if (ec)
+            {
+                // ...
+            }
+            else
+            {
+                std::auto_ptr<libtorrent::alert> a = m_session->pop_alert();
+	
+                while (a.get())
+                {
+                     if (libtorrent::tracker_announce_alert * p = dynamic_cast<
+                        libtorrent::tracker_announce_alert *>(a.get())
+                        )
+                     { 
+                        if (p->handle.is_valid())
+                        {
+                            std::cout << 
+                                BOOST_CURRENT_FUNCTION << 
+                                ": tracker_announce_alert(" << p->message() << 
+                                ")." << 
+                            std::endl;
+                        }
+                    }
+                    else if (libtorrent::tracker_reply_alert * p = dynamic_cast<
+                        libtorrent::tracker_reply_alert *>(a.get())
+                        )
+                    {
+                        if (p->handle.is_valid())
+                        {
+                            std::cout << 
+                                BOOST_CURRENT_FUNCTION << 
+                                ": tracker_announce_alert(" << p->message() << 
+                                ")." << 
+                            std::endl;
+                        }
+                    }
+                    else if (libtorrent::portmap_alert * p = dynamic_cast<
+                        libtorrent::portmap_alert *>(a.get())
+                        )
+                    {
+                        std::cout << 
+                            BOOST_CURRENT_FUNCTION << ": portmap_alert(" << 
+                            p->message() << ")." << 
+                        std::endl;
+                    }
+                    else
+                    {
+                        std::cout << 
+                            BOOST_CURRENT_FUNCTION << 
+                            ": tracker_announce_alert(" << p->message() << 
+                            ")." << 
+                        std::endl;
+                    }
+		
+                    a = m_session->pop_alert();
+                }
+            }
+        }
+
+#endif // ENABLE_MESSAGE_QUEUE
+    
         boost::shared_ptr<libtorrent::session> m_session;
 		InfoHashToIndexMap m_piece_to_index_map;
 		TorrentPathToDownloadHandle m_torrent_path_to_handle;
 		
-    
     protected:
     
-        // ...
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+        boost::asio::io_service io_service_;
+        boost::asio::deadline_timer deadline_timer_;
+#endif // ENABLE_MESSAGE_QUEUE
 };
 
 // Java function to C interfaces.
