@@ -22,7 +22,10 @@
 #include <libtorrent/alert.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/session_settings.hpp>
+#include <libtorrent/extensions/metadata_transfer.hpp>
+#include <libtorrent/extensions/ut_metadata.hpp>
 #include <libtorrent/extensions/ut_pex.hpp>
+#include <libtorrent/extensions/smart_ban.hpp>
 #include <libtorrent/bencode.hpp>
 
 #include "org_lastbamboo_jni_JLibTorrent.h"
@@ -69,35 +72,29 @@ class session : private boost::noncopyable
                 version_micro % 10), std::make_pair(port, port + 100)
                 )
             );
-            
-#if 0 // Enable DHT
-			
-			m_session->start_dht();
-            
-			m_session->add_dht_router(std::make_pair(
-                std::string("router.bittorrent.com"), 6881)
-            );
-            
-			m_session->add_dht_router(std::make_pair(
-                std::string("router.utorrent.com"), 6881)
-            );
-            
-			m_session->add_dht_router(std::make_pair(
-                std::string("router.bitcomet.com"), 6881)
-            );
-#endif
 
 			libtorrent::session_settings settings;
 
 			settings.user_agent = "LittleShoot/1.0 libtorrent/"
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
-			
-            m_session->set_settings(settings);
-
-            m_session->add_extension(&libtorrent::create_ut_pex_plugin);	
             
-            m_session->set_upload_rate_limit(1024 * 32);
+            m_session->start_upnp();
+
+            m_session->start_natpmp();
+
+            m_session->add_extension(&libtorrent::create_metadata_plugin);
+            m_session->add_extension(&libtorrent::create_ut_pex_plugin);
+            m_session->add_extension(&libtorrent::create_ut_metadata_plugin);
+            m_session->add_extension(&libtorrent::create_smart_ban_plugin);
+
+            m_session->set_max_uploads(4);
+            m_session->set_max_half_open_connections(20);
+            m_session->set_download_rate_limit(-1);
+            m_session->set_upload_rate_limit(1024 * 37);
+            m_session->set_settings(settings);
+            
+            m_session->set_upload_rate_limit(1024 * 37);
         }
         
         void stop()
