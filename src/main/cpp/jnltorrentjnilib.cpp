@@ -58,11 +58,10 @@ class session : private boost::noncopyable
         session()
             : deadline_timer_(io_service_)
         {
-        
+            // ...
         }
 #endif // ENABLE_MESSAGE_QUEUE
 
-    
         static session & instance() 
         {
 			return boost::details::pool::singleton_default<session>::instance();
@@ -116,7 +115,10 @@ class session : private boost::noncopyable
         }
 	
 		const libtorrent::torrent_handle download_torrent(
-			const char* incompleteDir, const char* torrentPath, int size) 
+            const char * incompleteDir, 
+            const char * torrentPath, 
+            std::size_t size
+            ) 
 		{
 			cout << "Building buffer of size: " << size << endl;
 			vector<char> buf(size);
@@ -126,7 +128,6 @@ class session : private boost::noncopyable
             
             try 
             {
-            
                 e = libtorrent::bdecode(
                     buf.begin(), buf.end()
                 );
@@ -134,9 +135,9 @@ class session : private boost::noncopyable
             }
             catch (std::exception & e)
             {
-                std::cerr << 
-                    "JNLTORRENT: (" << e.what() << 
-                    "), returning invalid handle." << 
+                std::cout << 
+                    BOOST_CURRENT_FUNCTION << ": caught(" << 
+                    e.what() << ")returning invalid handle." << 
                 std::endl;
                 
                 return libtorrent::torrent_handle();
