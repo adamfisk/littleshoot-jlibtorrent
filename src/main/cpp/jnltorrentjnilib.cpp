@@ -91,10 +91,8 @@ class session : private boost::noncopyable
             m_session->set_max_uploads(4);
             m_session->set_max_half_open_connections(20);
             m_session->set_download_rate_limit(-1);
-            m_session->set_upload_rate_limit(1024 * 37);
+            m_session->set_upload_rate_limit(1024 * 39);
             m_session->set_settings(settings);
-            
-            m_session->set_upload_rate_limit(1024 * 37);
         }
         
         void stop()
