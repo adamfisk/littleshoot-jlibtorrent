@@ -121,6 +121,7 @@ class session : private boost::noncopyable
             cout << "Save path for torrent is: " << incompleteDir << endl;
 
             p.ti = new libtorrent::torrent_info(e);
+            p.auto_managed = true;
             libtorrent::torrent_handle handle = m_session->add_torrent(p);
             handle.set_sequential_download(true);
             
