@@ -106,24 +106,42 @@ class session : private boost::noncopyable
 			cout << "Building buffer of size: " << size << endl;
 			vector<char> buf(size);
 			ifstream(torrentPath, ios_base::binary).read(&buf[0], size);
-			
-			libtorrent::lazy_entry e;
-			int ret = libtorrent::lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
-			if (ret != 0)
-			{
-				cerr << "Bad bencoding. Returning invalid handle." << ret << endl;
-				return libtorrent::torrent_handle();
-			}
+            
+            libtorrent::entry e;
+            
+            try 
+            {
+            
+                e = libtorrent::bdecode(
+                    buf.begin(), buf.end()
+                );
+            
+            }
+            catch (std::exception & e)
+            {
+                std::cerr << 
+                    "JNLTORRENT: (" << e.what() << 
+                    "), returning invalid handle." << 
+                std::endl;
+                
+                return libtorrent::torrent_handle();
+            }
 
-			cerr << "bencoding is valid!!: " << ret << endl;
 			libtorrent::add_torrent_params p;
 			p.save_path = incompleteDir;
+            
             cout << "Save path for torrent is: " << incompleteDir << endl;
 
             p.ti = new libtorrent::torrent_info(e);
             p.auto_managed = true;
+            
             libtorrent::torrent_handle handle = m_session->add_torrent(p);
-            handle.set_sequential_download(true);
+            
+            // Sequential mode for single file torrents.
+            
+            handle.set_sequential_download(
+                p.ti->files().total_size() == 1 ? true : false
+            );
             
             if (!handle.is_valid())
             {
