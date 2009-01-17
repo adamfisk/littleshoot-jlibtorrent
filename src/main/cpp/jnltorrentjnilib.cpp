@@ -100,9 +100,11 @@ class session : private boost::noncopyable
             m_session->add_extension(&libtorrent::create_smart_ban_plugin);
 
             m_session->set_max_uploads(4);
-            m_session->set_max_half_open_connections(20);
+            m_session->set_max_half_open_connections(8);
             m_session->set_download_rate_limit(-1);
-            m_session->set_upload_rate_limit(1024 * 39);
+            
+            // Common 768k dsl - factor (8 active s, 5 active s).
+            m_session->set_upload_rate_limit(1024 * 96);
             m_session->set_settings(settings);
         }
         
@@ -151,11 +153,24 @@ class session : private boost::noncopyable
             p.ti = new libtorrent::torrent_info(e);
             p.auto_managed = true;
             
+            // Compact mode for single file torrents.
+            p.storage_mode = 
+                (p.ti->files().num_files() == 1) ? 
+                libtorrent::storage_mode_compact : 
+                libtorrent::storage_mode_sparse
+            ;
+            p.paused = false;
+            p.duplicate_is_error = false;
+            
             libtorrent::torrent_handle handle = m_session->add_torrent(p);
             
             // Sequential mode for single file torrents.
             
             handle.set_sequential_download(p.ti->files().num_files() == 1);
+            handle.set_max_connections(50);
+            handle.set_max_uploads(-1);
+            handle.set_upload_limit(1024 * 32);
+            handle.set_download_limit(-1);
             
             if (!handle.is_valid())
             {
