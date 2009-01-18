@@ -495,10 +495,7 @@ class session : private boost::noncopyable
                     continue;
                 }
                 
-                if (h.is_valid())
-                {
-                    h.save_resume_data();
-                }
+                h.save_resume_data();
             }
 #if 0
             boost::filesystem::ofstream out(
