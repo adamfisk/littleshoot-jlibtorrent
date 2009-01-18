@@ -197,6 +197,9 @@ class session : private boost::noncopyable
                 TorrentPathToDownloadHandle::value_type(stringPath, handle));
             
             cout << "Torrent name: " << handle.name() << endl;
+            
+            save_state();
+            
             return handle;
 		}
 	
