@@ -438,6 +438,8 @@ class session : private boost::noncopyable
 			using namespace libtorrent;
 			const torrent_handle th = get_torrent_for_path(torrentPath);
 			m_session->remove_torrent(th);
+            
+            save_state();
 		}
     
         const libtorrent::torrent_info info(const char* torrentPath) 
@@ -461,25 +463,39 @@ class session : private boost::noncopyable
         
         void load_state()
         {
+#if 0
             boost::filesystem::ifstream state_file(
-                "session_state.dat", std::ios_base::binary
+                "/session_state.dat", std::ios_base::binary
             );
             state_file.unsetf(std::ios_base::skipws);
             m_session->load_state(libtorrent::bdecode(
                 std::istream_iterator<char>(state_file), 
                 std::istream_iterator<char>())
             );
+#endif
         }
         
         void save_state()
         {
+            TorrentPathToDownloadHandle::iterator it = 
+                m_torrent_path_to_handle.begin();
+                
+			for (; it != m_torrent_path_to_handle.end(); ++it)
+			{
+                if (it->second.is_valid())
+                {
+                    it->second.save_resume_data();
+                }
+            }
+#if 0
             boost::filesystem::ofstream out(
-                "session_state.dat", std::ios_base::binary
+                "/session_state.dat", std::ios_base::binary
             );
             out.unsetf(std::ios_base::skipws);
             libtorrent::bencode(
                 std::ostream_iterator<char>(out), m_session->state()
             );
+#endif
         }
         
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
