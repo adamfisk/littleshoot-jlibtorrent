@@ -33,7 +33,7 @@
 
 using namespace std;
 
-#define ENABLE_MESSAGE_QUEUE 1
+#define ENABLE_MESSAGE_QUEUE 0
 
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
@@ -56,7 +56,6 @@ class session : private boost::noncopyable
     
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
         session()
-            : deadline_timer_(io_service_)
         {
             // ...
         }
@@ -90,6 +89,13 @@ class session : private boost::noncopyable
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
             
+            m_session->set_alert_mask(
+                libtorrent::alert::port_mapping_notification | 
+                libtorrent::alert::storage_notification | 
+                libtorrent::alert::status_notification | 
+                libtorrent::alert::tracker_notification
+            );
+            
             m_session->start_upnp();
 
             m_session->start_natpmp();
@@ -106,13 +112,17 @@ class session : private boost::noncopyable
             // Common 768k dsl - factor (8 active s, 5 active s).
             m_session->set_upload_rate_limit(1024 * 96);
             m_session->set_settings(settings);
+            
+#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
+            session::instance().tick();
+#endif // ENABLE_MESSAGE_QUEUE
         }
         
         void stop()
         {
-            save_state(true);
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-            deadline_timer_.cancel();
+            session::instance().tick();
+            save_state(true);
 #endif // ENABLE_MESSAGE_QUEUE
             m_session.reset();
         }
@@ -179,13 +189,7 @@ class session : private boost::noncopyable
             }
             else
             {
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-                deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
-                deadline_timer_.async_wait(boost::bind(
-                    &session::tick, this, boost::asio::placeholders::error)
-                );
-                pump_message_queue();
-#endif // ENABLE_MESSAGE_QUEUE
+
             }
             
             cout << "Adding torrent path to map: " << torrentPath << endl;
@@ -207,24 +211,24 @@ class session : private boost::noncopyable
                 m_torrent_path_to_handle.find(stringPath);
             if (iter != m_torrent_path_to_handle.end())
             {
-                cout << "Found torrent" << endl;
+               // cout << "Found torrent" << endl;
                 const torrent_handle th = iter->second;
                 
                 if (!th.has_metadata()) 
                 {
-                    cerr << "No metadata for torrent.  Returning invalid." << endl;
+                   // cerr << "No metadata for torrent.  Returning invalid." << endl;
                     return torrent_handle();
                 }
                 if (!th.is_valid()) 
                 {
-                    cerr << "Torrent not valid.  Returning invalid." << endl; 
+                   // cerr << "Torrent not valid.  Returning invalid." << endl; 
                     return torrent_handle();
                 }
                 return th;
             }
             else
             {
-                cerr << "No handle for torrent! Returning invalid." << endl;
+               // cerr << "No handle for torrent! Returning invalid." << endl;
                 return torrent_handle();
             }
         }
@@ -237,28 +241,28 @@ class session : private boost::noncopyable
 				m_torrent_path_to_handle.find(stringPath);
 			if (iter != m_torrent_path_to_handle.end())
 			{
-				cout << "Found torrent" << endl;
+				//cout << "Found torrent" << endl;
 				const torrent_handle th = iter->second;
 				
 				if (!th.has_metadata()) 
 				{
-					cerr << "No metadata for torrent" << endl;
+					//cerr << "No metadata for torrent" << endl;
 					return -1;
 				}
 				if (!th.is_valid()) 
 				{
-					cerr << "Torrent not valid" << endl; 
+					//cerr << "Torrent not valid" << endl; 
 					return -1;
 				}
 				const torrent_info ti = th.get_torrent_info();
 				const torrent_status status = th.status();
 				if (is_finished(th))
 				{
-					cout << "File is finished!!!" << endl;
+					//cout << "File is finished!!!" << endl;
 					return ti.total_size();
 				}
 				
-				cout << "Download rate: " << status.download_rate << endl;
+				//cout << "Download rate: " << status.download_rate << endl;
 				
 				const sha1_hash sha1 = th.info_hash();
 				
@@ -267,12 +271,12 @@ class session : private boost::noncopyable
 				if (iter != m_piece_to_index_map.end())
 				{
 					index = iter->second;
-					cout << "Found existing index: " << index << endl;
+					//cout << "Found existing index: " << index << endl;
 					//return index;
 				}
 				else
 				{
-					cerr << "No existing torrent" << endl;
+					//cerr << "No existing torrent" << endl;
 					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
 					return -1;
 				}
@@ -282,22 +286,22 @@ class session : private boost::noncopyable
 				{
 					if (status.pieces[j])
 					{
-						cout << "Found piece at index: " << j << endl;
+						//cout << "Found piece at index: " << j << endl;
 						// We have this piece -- stream it.
 					} else
 					{
 						// We do not have this piece -- set the index and
 						// break.
-						cout << "Setting index to: " << j << endl;
+					//	cout << "Setting index to: " << j << endl;
 						m_piece_to_index_map[sha1] = j;
 						
-						cout << "index: " << j << endl;
-						cout << "piece length is: " << ti.piece_length() << endl;
-						cout << "num pieces is: " << ti.num_pieces() << endl;
+						//cout << "index: " << j << endl;
+						//cout << "piece length is: " << ti.piece_length() << endl;
+						//cout << "num pieces is: " << ti.num_pieces() << endl;
 						
 						const unsigned long maxByte = j * ti.piece_length();
 						
-						cout << "max byte is: " << maxByte << endl;
+						//cout << "max byte is: " << maxByte << endl;
 
 						return maxByte;
 					}
@@ -307,7 +311,7 @@ class session : private boost::noncopyable
 			else
 			{
 				// We don't yet know about the torrent.  
-				cerr << "No torrent found at " << torrentPath << endl;
+				//cerr << "No torrent found at " << torrentPath << endl;
 				return -1;
 			}
 		}
@@ -317,18 +321,18 @@ class session : private boost::noncopyable
             using namespace libtorrent;
             const torrent_status status = th.status();
             const torrent_status::state_t s = status.state;
-            cout << "Found state: " << s << endl;
+           // cout << "Found state: " << s << endl;
             if (s == torrent_status::finished)
             {
-                cout << "Got finished state!!" << endl;
+               // cout << "Got finished state!!" << endl;
                 return true;
             } else if (s == torrent_status::seeding)
             {
-                cout << "Got seeding state!!" << endl;
+               // cout << "Got seeding state!!" << endl;
                 return true;
             } else
             {
-                cout << "Got other state!!" << endl;
+               // cout << "Got other state!!" << endl;
                 return false;
             }
             
@@ -374,7 +378,7 @@ class session : private boost::noncopyable
             string name;
             if (ti.num_files() == 1)
             {
-                cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
+               // cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
                 const file_entry fe = ti.file_at(0);
                 name = fe.path.file_string();
             } else
@@ -417,10 +421,6 @@ class session : private boost::noncopyable
     
         const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
         {
-            // Save the state of this torrent. :FIXME: This should be called 
-            // when the move_storage operation is completed.
-            save_state();
-        
             const libtorrent::torrent_handle th = 
                 get_torrent_for_path(torrentPath);
             const boost::filesystem::path savePath = th.save_path();
@@ -516,47 +516,18 @@ class session : private boost::noncopyable
         }
         
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-        void pump_message_queue()
+        void tick()
         {
-            boost::system::error_code ec;
-            
-            try
-            {
-                io_service_.run_one(ec);
+            std::cout << "##########: tick" << std::endl;
+
+                std::auto_ptr<libtorrent::alert> a;
                 
-                if (ec)
-                {
-                    std::cout << 
-                        BOOST_CURRENT_FUNCTION << ": error(" << 
-                        ec.message() << ")." <<
-                    std::endl;
-                }
-            }
-            catch (std::exception & e)
-            {
-                std::cout << 
-                    BOOST_CURRENT_FUNCTION << ": caught(" << 
-                    e.what() << ")." <<
-                std::endl;
-            }
-        }
-#endif // ENABLE_MESSAGE_QUEUE
-    
-    private:
-    
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-        void tick(const boost::system::error_code & ec)
-        {
-            if (ec)
-            {
-                // ...
-            }
-            else
-            {
-                std::auto_ptr<libtorrent::alert> a = m_session->pop_alert();
-	
+                a = m_session->pop_alert();
+                
                 while (a.get())
                 {
+                    std::cout << "##########:" << a->message() << std::endl;
+                    
                      if (libtorrent::tracker_announce_alert * p = dynamic_cast<
                         libtorrent::tracker_announce_alert *>(a.get())
                         )
@@ -610,6 +581,12 @@ class session : private boost::noncopyable
                             >(a.get())
                         )
                     {
+                        std::cout << 
+                            BOOST_CURRENT_FUNCTION << 
+                            ": save_resume_data_alert(" << 
+                            p->message() << ")." << 
+                        std::endl;
+                        
                         libtorrent::torrent_handle h = p->handle;
 						boost::filesystem::ofstream out(
                             h.save_path() / (
@@ -621,13 +598,27 @@ class session : private boost::noncopyable
                             std::ostream_iterator<char>(out), *p->resume_data
                         );
                     }
+                    else
+                    {
+                        std::cout << 
+                            BOOST_CURRENT_FUNCTION << 
+                            ": Alert(" << 
+                            p->message() << ")." << 
+                        std::endl;
+                    }
 		
                     a = m_session->pop_alert();
                 }
-            }
+            
+//            deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
+//            deadline_timer_.async_wait(boost::bind(
+//                &session::tick, boost::ref(instance()), boost::asio::placeholders::error)
+//            );
         }
 
 #endif // ENABLE_MESSAGE_QUEUE
+
+    private:
     
         boost::shared_ptr<libtorrent::session> m_session;
 		InfoHashToIndexMap m_piece_to_index_map;
@@ -636,8 +627,9 @@ class session : private boost::noncopyable
     protected:
     
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-        boost::asio::io_service io_service_;
-        boost::asio::deadline_timer deadline_timer_;
+     //   boost::asio::io_service io_service_;
+       // boost::asio::deadline_timer deadline_timer_;
+     //   boost::shared_ptr<boost::thread> thread_;
 #endif // ENABLE_MESSAGE_QUEUE
 };
 
