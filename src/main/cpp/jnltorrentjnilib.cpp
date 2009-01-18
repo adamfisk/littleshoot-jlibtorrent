@@ -237,8 +237,7 @@ class session : private boost::noncopyable
 #endif
                 }
             }
-            
-            // cerr << "No handle for torrent! Returning invalid." << endl;
+
             return torrent_handle();
         }
 	
