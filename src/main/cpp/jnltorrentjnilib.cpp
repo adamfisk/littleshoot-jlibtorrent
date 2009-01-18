@@ -110,7 +110,7 @@ class session : private boost::noncopyable
         
         void stop()
         {
-            save_state();
+            save_state(true);
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
             deadline_timer_.cancel();
 #endif // ENABLE_MESSAGE_QUEUE
@@ -417,6 +417,10 @@ class session : private boost::noncopyable
     
         const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
         {
+            // Save the state of this torrent. :FIXME: This should be called 
+            // when the move_storage operation is completed.
+            save_state();
+        
             const libtorrent::torrent_handle th = 
                 get_torrent_for_path(torrentPath);
             const boost::filesystem::path savePath = th.save_path();
@@ -469,9 +473,12 @@ class session : private boost::noncopyable
 #endif
         }
         
-        void save_state()
+        void save_state(bool flag = false)
         {
-            m_session->pause();
+            if (flag)
+            {
+                m_session->pause();
+            }
         
             TorrentPathToDownloadHandle::iterator it = 
                 m_torrent_path_to_handle.begin();
