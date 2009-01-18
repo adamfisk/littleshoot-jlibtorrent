@@ -106,10 +106,13 @@ class session : private boost::noncopyable
             // Common 768k dsl - factor (8 active s, 5 active s).
             m_session->set_upload_rate_limit(1024 * 96);
             m_session->set_settings(settings);
+            
+            load_state();
         }
         
         void stop()
         {
+            save_state();
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
             deadline_timer_.cancel();
 #endif // ENABLE_MESSAGE_QUEUE
@@ -451,6 +454,29 @@ class session : private boost::noncopyable
         const boost::shared_ptr<libtorrent::session> & get_session()
         {
             return m_session;
+        }
+        
+        void load_state()
+        {
+            boost::filesystem::ifstream state_file(
+                "session_state.dat", std::ios_base::binary
+            );
+            state_file.unsetf(std::ios_base::skipws);
+            m_session->load_state(libtorrent::bdecode(
+                std::istream_iterator<char>(state_file), 
+                std::istream_iterator<char>())
+            );
+        }
+        
+        void save_state()
+        {
+            boost::filesystem::ofstream out(
+                "session_state.dat", std::ios_base::binary
+            );
+            out.unsetf(std::ios_base::skipws);
+            libtorrent::bencode(
+                std::ostream_iterator<char>(out), m_session->state()
+            );
         }
         
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
