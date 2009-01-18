@@ -209,28 +209,37 @@ class session : private boost::noncopyable
             const string stringPath = torrentPath;
             const TorrentPathToDownloadHandle::iterator iter = 
                 m_torrent_path_to_handle.find(stringPath);
+            
             if (iter != m_torrent_path_to_handle.end())
             {
-               // cout << "Found torrent" << endl;
                 const torrent_handle th = iter->second;
                 
-                if (!th.has_metadata()) 
+                try
                 {
-                   // cerr << "No metadata for torrent.  Returning invalid." << endl;
-                    return torrent_handle();
+                    if (!th.has_metadata()) 
+                    {
+                        return torrent_handle();
+                    }
+                    
+                    if (!th.is_valid()) 
+                    {
+                        return torrent_handle();
+                    }
+                    return th;
                 }
-                if (!th.is_valid()) 
+                catch (std::exception & e)
                 {
-                   // cerr << "Torrent not valid.  Returning invalid." << endl; 
-                    return torrent_handle();
+#ifndef NDEBUG
+                    std::cerr << 
+                        BOOST_CURRENT_FUNCTION << ": caught(" << 
+                        e.what() << ")" << 
+                    std::endl;
+#endif
                 }
-                return th;
             }
-            else
-            {
-               // cerr << "No handle for torrent! Returning invalid." << endl;
-                return torrent_handle();
-            }
+            
+            // cerr << "No handle for torrent! Returning invalid." << endl;
+            return torrent_handle();
         }
 	
 		const long get_index_for_torrent(const char* torrentPath)
