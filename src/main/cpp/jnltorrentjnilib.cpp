@@ -106,8 +106,6 @@ class session : private boost::noncopyable
             // Common 768k dsl - factor (8 active s, 5 active s).
             m_session->set_upload_rate_limit(1024 * 96);
             m_session->set_settings(settings);
-            
-            load_state();
         }
         
         void stop()
@@ -197,9 +195,7 @@ class session : private boost::noncopyable
                 TorrentPathToDownloadHandle::value_type(stringPath, handle));
             
             cout << "Torrent name: " << handle.name() << endl;
-            
-            save_state();
-            
+
             return handle;
 		}
 	
@@ -438,8 +434,6 @@ class session : private boost::noncopyable
 			using namespace libtorrent;
 			const torrent_handle th = get_torrent_for_path(torrentPath);
 			m_session->remove_torrent(th);
-            
-            save_state();
 		}
     
         const libtorrent::torrent_info info(const char* torrentPath) 
@@ -477,14 +471,33 @@ class session : private boost::noncopyable
         
         void save_state()
         {
+            m_session->pause();
+        
             TorrentPathToDownloadHandle::iterator it = 
                 m_torrent_path_to_handle.begin();
                 
 			for (; it != m_torrent_path_to_handle.end(); ++it)
 			{
-                if (it->second.is_valid())
+                libtorrent::torrent_handle h = it->second;
+                
+                if (!h.is_valid())
                 {
-                    it->second.save_resume_data();
+                    continue;
+                }
+                
+                if (h.is_paused())
+                {
+                    continue;
+                }
+                
+                if (!h.has_metadata())
+                {
+                    continue;
+                }
+                
+                if (h.is_valid())
+                {
+                    h.save_resume_data();
                 }
             }
 #if 0
@@ -575,13 +588,34 @@ class session : private boost::noncopyable
                             p->message() << ")." << 
                         std::endl;
                     }
-                    else
+                    else if (
+                        libtorrent::save_resume_data_failed_alert * p = 
+                        dynamic_cast<libtorrent::save_resume_data_failed_alert *
+                        >(a.get())
+                        )
                     {
                         std::cout << 
                             BOOST_CURRENT_FUNCTION << 
-                            ": tracker_announce_alert(" << p->message() << 
-                            ")." << 
+                            ": save_resume_data_failed_alert(" << 
+                            p->message() << ")." << 
                         std::endl;
+                    }
+                    else if (
+                        libtorrent::save_resume_data_alert * p = dynamic_cast<
+                            libtorrent::save_resume_data_alert *
+                            >(a.get())
+                        )
+                    {
+                        libtorrent::torrent_handle h = p->handle;
+						boost::filesystem::ofstream out(
+                            h.save_path() / (
+                                h.get_torrent_info().name() + ".fastresume"
+                            ), std::ios_base::binary
+                        );
+						out.unsetf(std::ios_base::skipws);
+						libtorrent::bencode(
+                            std::ostream_iterator<char>(out), *p->resume_data
+                        );
                     }
 		
                     a = m_session->pop_alert();
