@@ -35,6 +35,20 @@ using namespace std;
 
 #define ENABLE_MESSAGE_QUEUE 0
 
+#ifndef NDEBUG
+#define log_debug(s)                       \
+    do {                                                        \
+        if (1) \
+        {                      \
+            std::ostringstream oss; \
+            oss << s; \
+            std::cout << oss.str() << std::endl;                \
+        } \
+    } while (0)
+#else
+    #define log_debug(s) /* */
+#endif
+
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
@@ -249,28 +263,29 @@ class session : private boost::noncopyable
 				m_torrent_path_to_handle.find(stringPath);
 			if (iter != m_torrent_path_to_handle.end())
 			{
-				//cout << "Found torrent" << endl;
+				log_debug("Found torrent");
+                
 				const torrent_handle th = iter->second;
 				
 				if (!th.has_metadata()) 
 				{
-					//cerr << "No metadata for torrent" << endl;
+					log_debug("No metadata for torrent");
 					return -1;
 				}
 				if (!th.is_valid()) 
 				{
-					//cerr << "Torrent not valid" << endl; 
+					log_debug("Torrent not valid"); 
 					return -1;
 				}
 				const torrent_info ti = th.get_torrent_info();
 				const torrent_status status = th.status();
 				if (is_finished(th))
 				{
-					//cout << "File is finished!!!" << endl;
+					log_debug("File is finished!!!");
 					return ti.total_size();
 				}
 				
-				//cout << "Download rate: " << status.download_rate << endl;
+				log_debug("Download rate: " << status.download_rate);
 				
 				const sha1_hash sha1 = th.info_hash();
 				
@@ -279,12 +294,12 @@ class session : private boost::noncopyable
 				if (iter != m_piece_to_index_map.end())
 				{
 					index = iter->second;
-					//cout << "Found existing index: " << index << endl;
+					log_debug("Found existing index: " << index);
 					//return index;
 				}
 				else
 				{
-					//cerr << "No existing torrent" << endl;
+					log_debug("No existing torrent");
 					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
 					return -1;
 				}
@@ -294,22 +309,22 @@ class session : private boost::noncopyable
 				{
 					if (status.pieces[j])
 					{
-						//cout << "Found piece at index: " << j << endl;
+						log_debug("Found piece at index: " << j);
 						// We have this piece -- stream it.
 					} else
 					{
 						// We do not have this piece -- set the index and
 						// break.
-					//	cout << "Setting index to: " << j << endl;
+                        log_debug("Setting index to: " << j);
 						m_piece_to_index_map[sha1] = j;
 						
-						//cout << "index: " << j << endl;
-						//cout << "piece length is: " << ti.piece_length() << endl;
-						//cout << "num pieces is: " << ti.num_pieces() << endl;
+						log_debug("index: " << j);
+						log_debug("piece length is: " << ti.piece_length());
+						log_debug("num pieces is: " << ti.num_pieces());
 						
 						const unsigned long maxByte = j * ti.piece_length();
 						
-						//cout << "max byte is: " << maxByte << endl;
+						log_debug("max byte is: " << maxByte);
 
 						return maxByte;
 					}
@@ -319,7 +334,7 @@ class session : private boost::noncopyable
 			else
 			{
 				// We don't yet know about the torrent.  
-				//cerr << "No torrent found at " << torrentPath << endl;
+				log_debug("No torrent found at " << torrentPath);
 				return -1;
 			}
 		}
@@ -690,7 +705,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_
 	)
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	std::cout << "Got max byte call for path:" << torrentPath << std::endl;
+	//std::cout << "Got max byte call for path:" << torrentPath << std::endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -708,7 +723,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1f
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got save path request for torrent:" << torrentPath << endl;
+	log_debug("Got save path request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -731,7 +746,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1to
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    cout << "Got name request for torrent:" << torrentPath << endl;
+ //   cout << "Got name request for torrent:" << torrentPath << endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -751,7 +766,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	std::cout << "Got size request for torrent:" << torrentPath << std::endl;
+	//std::cout << "Got size request for torrent:" << torrentPath << std::endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -762,7 +777,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 		session::instance().get_size_for_torrent(torrentPath); 
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
-    cout << "Returning size..." << endl;
+  //  cout << "Returning size..." << endl;
 	return size;
 }
 
@@ -771,7 +786,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got cancel request for torrent:" << torrentPath << endl;
+	log_debug("Got cancel request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -788,7 +803,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torr
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got state request for torrent:" << torrentPath << endl;
+	log_debug("Got state request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -797,7 +812,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torr
 	
 	const int state = session::instance().get_state_for_torrent(torrentPath); 
 
-    cout << "Returning state: " << state << endl;
+   // cout << "Returning state: " << state << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return state;
 }
@@ -807,7 +822,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got num files request for torrent:" << torrentPath << endl;
+	log_debug("Got num files request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -827,7 +842,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1fo
 )
 {
 	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got bytes read request for torrent:" << torrentPath << endl;
+	log_debug("Got bytes read request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -837,7 +852,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1fo
     const long bytesRead = 
         session::instance().get_bytes_read_for_torrent(torrentPath);
 	
-    cout << "Bytes read: " << bytesRead << endl;
+   // cout << "Bytes read: " << bytesRead << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return bytesRead;
 }
@@ -852,17 +867,17 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got num peers request for torrent:" << torrentPath << endl;
+	log_debug("Got num peers request for torrent:" << torrentPath);
     if (!torrentPath)
     {
-		cerr << "Out of memory!!" << endl;
+		log_debug("Out of memory!!");
 		return NULL; /* OutOfMemoryError already thrown */
 	}
     
     const int numPeers = 
         session::instance().get_num_peers_for_torrent(torrentPath);
 	
-    cout << "Num peers: " << numPeers << endl;
+    log_debug("Num peers: " << numPeers);
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return numPeers;
 }
@@ -877,7 +892,7 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Got speed request for torrent:" << torrentPath << endl;
+	log_debug("Got speed request for torrent:" << torrentPath);
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
@@ -887,7 +902,7 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
     const float downloadRate = 
         session::instance().get_download_rate_for_torrent(torrentPath);
 	
-    cout << "Speed: " << downloadRate << endl;
+  //  cout << "Speed: " << downloadRate << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return downloadRate;
 }
