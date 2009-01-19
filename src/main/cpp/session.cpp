@@ -242,28 +242,28 @@ class session : private boost::noncopyable
 				m_torrent_path_to_handle.find(stringPath);
 			if (iter != m_torrent_path_to_handle.end())
 			{
-				//cout << "Found torrent" << endl;
+				log_debug("Found torrent");
 				const torrent_handle th = iter->second;
 				
 				if (!th.has_metadata()) 
 				{
-					//cerr << "No metadata for torrent" << endl;
+					log_debug("No metadata for torrent");
 					return -1;
 				}
 				if (!th.is_valid()) 
 				{
-					//cerr << "Torrent not valid" << endl; 
+					log_debug("Torrent not valid"); 
 					return -1;
 				}
 				const torrent_info ti = th.get_torrent_info();
 				const torrent_status status = th.status();
 				if (is_finished(th))
 				{
-					//cout << "File is finished!!!" << endl;
+					log_debug("File is finished!!!");
 					return ti.total_size();
 				}
 				
-				//cout << "Download rate: " << status.download_rate << endl;
+				log_debug(<<"Download rate: " << status.download_rate << endl;
 				
 				const sha1_hash sha1 = th.info_hash();
 				
@@ -272,12 +272,12 @@ class session : private boost::noncopyable
 				if (iter != m_piece_to_index_map.end())
 				{
 					index = iter->second;
-					//cout << "Found existing index: " << index << endl;
+					log_debug("Found existing index: " << index);
 					//return index;
 				}
 				else
 				{
-					//cerr << "No existing torrent" << endl;
+					log_debug"No existing torrent");
 					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
 					return -1;
 				}
