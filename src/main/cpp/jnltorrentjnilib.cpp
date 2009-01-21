@@ -304,7 +304,7 @@ class session : private boost::noncopyable
 					return -1;
 				}
 				const unsigned int numPieces = status.pieces.size();
-				cout << "Num pieces is: " << numPieces << endl;
+				//cout << "Num pieces is: " << numPieces << endl;
 				for (unsigned int j = index; j < numPieces; j++)
 				{
 					if (status.pieces[j])
