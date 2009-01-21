@@ -217,7 +217,7 @@ class session : private boost::noncopyable
             return handle;
 		}
 	
-        libtorrent::torrent_handle get_torrent_for_path(const char* torrentPath)
+        libtorrent::torrent_handle handle(const char* torrentPath)
         {
             using namespace libtorrent;
             const string stringPath = torrentPath;
@@ -365,7 +365,7 @@ class session : private boost::noncopyable
 		{
             /*
 			using namespace libtorrent;
-			const torrent_handle th = get_torrent_for_path(torrentPath);
+			const torrent_handle th = handle(torrentPath);
             const torrent_info ti = th.get_torrent_info();
             boost::filesystem::path path;
             if (ti.num_files() == 1)
@@ -411,7 +411,7 @@ class session : private boost::noncopyable
             
             return name;
         }
-	
+    
         const libtorrent::size_type get_size_for_torrent(const char* torrentPath) 
 		{
 			return info(torrentPath).total_size();
@@ -445,7 +445,7 @@ class session : private boost::noncopyable
         const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
         {
             const libtorrent::torrent_handle th = 
-                get_torrent_for_path(torrentPath);
+                handle(torrentPath);
             const boost::filesystem::path savePath = th.save_path();
             cout << "Save path is: " << savePath.string() << endl;
             const boost::filesystem::path tempDir = savePath.parent_path();
@@ -459,21 +459,21 @@ class session : private boost::noncopyable
 		void remove_torrent(const char* torrentPath) 
 		{
 			using namespace libtorrent;
-			const torrent_handle th = get_torrent_for_path(torrentPath);
+			const torrent_handle th = handle(torrentPath);
 			m_session->remove_torrent(th);
 		}
     
         const libtorrent::torrent_info info(const char* torrentPath) 
         {
             using namespace libtorrent;
-            const torrent_handle th = get_torrent_for_path(torrentPath);
+            const torrent_handle th = handle(torrentPath);
             return th.get_torrent_info();
         }
             
         const libtorrent::torrent_status status(const char* torrentPath) 
         {
             using namespace libtorrent;
-            const torrent_handle th = get_torrent_for_path(torrentPath);
+            const torrent_handle th = handle(torrentPath);
             return th.status();
         }
     
@@ -930,3 +930,31 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1download
 
 	return finalPath;
 }
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_pause_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+)
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+	}
+    session::instance().handle(torrentPath).pause();
+    env->ReleaseStringUTFChars(arg, torrentPath);
+}
+
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+)
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+	}
+    session::instance().handle(torrentPath).resume();
+    env->ReleaseStringUTFChars(arg, torrentPath);
+}
+

@@ -87,13 +87,17 @@ public class JLibTorrent
         stop();
         }
     
-    /*
-    public String getFullSavePath(final File torrentFile)
+    public void pauseTorrent(final File torrentFile)
         {
         final String path = normalizePath(torrentFile);
-        return get_save_path_for_torrent(path);
+        pause_torrent(path);
         }
-        */
+    
+    public void resumeTorrent(final File torrentFile)
+        {
+        final String path = normalizePath(torrentFile);
+        resume_torrent(path);
+        }
     
     public long getSizeForTorrent(final File torrentFile)
         {
@@ -172,9 +176,11 @@ public class JLibTorrent
 
     private native String get_name_for_torrent(final String path);
     
-    private native String get_save_path_for_torrent(final String path);
-    
     private native void remove_torrent(final String path);
+    
+    private native void pause_torrent(final String path);
+    
+    private native void resume_torrent(final String path);
     
     private native long get_max_byte_for_torrent(final String path);
     
