@@ -217,7 +217,7 @@ class session : private boost::noncopyable
             return handle;
 		}
 	
-        libtorrent::torrent_handle handle(const char* torrentPath)
+        const libtorrent::torrent_handle handle(const char* torrentPath)
         {
             using namespace libtorrent;
             const string stringPath = torrentPath;
@@ -432,9 +432,26 @@ class session : private boost::noncopyable
             return status(torrentPath).download_rate;
         }
     
-        const int get_state_for_torrent(const char* torrentPath) 
+        int get_state_for_torrent(const char* torrentPath) 
         {
-            return status(torrentPath).state;
+            const libtorrent::torrent_handle th = handle(torrentPath);
+            //const libtorrent::torrent_status stat = status(torrentPath);
+            if (th.is_paused())
+            {
+                return 200;
+            } 
+            else
+            {
+                const libtorrent::torrent_status stat = th.status();
+                if (!stat.error.empty())
+                {
+                    return 201;
+                }
+                else
+                {
+                    return stat.state;
+                }
+            }
         }
     
         const int get_num_files_for_torrent(const char* torrentPath) 
@@ -812,7 +829,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torr
 	
 	const int state = session::instance().get_state_for_torrent(torrentPath); 
 
-   // cout << "Returning state: " << state << endl;
+    log_debug("Returning state: " << state);
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return state;
 }
@@ -831,7 +848,6 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 	
 	const int numFiles = session::instance().get_num_files_for_torrent(torrentPath); 
 	
-    cout << "Num files: " << numFiles << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return numFiles;
 }
@@ -950,6 +966,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
 )
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    cout << "Resuming torrent at:" << torrentPath << endl;
     if (!torrentPath)
     {
 		cerr << "Out of memory!!" << endl;
