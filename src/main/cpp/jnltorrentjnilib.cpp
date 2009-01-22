@@ -956,7 +956,9 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_pause_1torrent(
     {
 		cerr << "Out of memory!!" << endl;
 	}
-    session::instance().handle(torrentPath).pause();
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    th.auto_managed(false);
+    th.pause();
     env->ReleaseStringUTFChars(arg, torrentPath);
 }
 
@@ -971,7 +973,8 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     {
 		cerr << "Out of memory!!" << endl;
 	}
-    session::instance().handle(torrentPath).resume();
+    
+    session::instance().handle(torrentPath).auto_managed(true);
     env->ReleaseStringUTFChars(arg, torrentPath);
 }
 
