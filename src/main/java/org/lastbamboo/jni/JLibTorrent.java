@@ -57,12 +57,12 @@ public class JLibTorrent
         start();
         }
     
-    public void download(final File incompleteDir, final File torrentFile) 
-        throws IOException 
-       
+    public void download(final File incompleteDir, final File torrentFile, 
+        final boolean sequential) throws IOException 
         {
         final long handle = add_torrent(incompleteDir.getCanonicalPath(), 
-            torrentFile.getCanonicalPath(), (int) torrentFile.length());
+            torrentFile.getCanonicalPath(), (int) torrentFile.length(), 
+            sequential);
         }
     
     public String moveToDownloadsDir(final File torrentFile)
@@ -195,7 +195,7 @@ public class JLibTorrent
     private native void stop();
     
     private native long add_torrent(String incompletePath, String torrentPath, 
-        int size);
+        int size, boolean sequential);
 
     
     }

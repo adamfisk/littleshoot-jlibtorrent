@@ -144,7 +144,8 @@ class session : private boost::noncopyable
 		const libtorrent::torrent_handle download_torrent(
             const char * incompleteDir, 
             const char * torrentPath, 
-            std::size_t size
+            std::size_t size,
+            bool sequential
             ) 
 		{
 			cout << "Building buffer of size: " << size << endl;
@@ -182,7 +183,7 @@ class session : private boost::noncopyable
             
             // Compact mode for single file torrents.
             p.storage_mode = 
-                (p.ti->files().num_files() == 1) ? 
+                (sequential) ? 
                 libtorrent::storage_mode_compact : 
                 libtorrent::storage_mode_sparse
             ;
@@ -193,7 +194,7 @@ class session : private boost::noncopyable
             
             // Sequential mode for single file torrents.
             
-            handle.set_sequential_download(p.ti->files().num_files() == 1);
+            handle.set_sequential_download(sequential);
             handle.set_max_connections(50);
             handle.set_max_uploads(-1);
             handle.set_upload_limit(1024 * 32);
@@ -362,39 +363,6 @@ class session : private boost::noncopyable
             }
             
         }
-        
-		const boost::filesystem::path get_full_save_path_for_torrent(const char* torrentPath) 
-		{
-            /*
-			using namespace libtorrent;
-			const torrent_handle th = handle(torrentPath);
-            const torrent_info ti = th.get_torrent_info();
-            boost::filesystem::path path;
-            if (ti.num_files() == 1)
-            {
-                cout << "get_full_save_path_for_torrent::returning path for a single file..." << endl;
-                const file_entry fe = ti.file_at(0);
-                // TODO: This is not right -- doesn't give the absolute path.
-                path = fe.path;
-            }
-            else
-            {
-                cout << "get_full_save_path_for_torrent::returning directory path..." << endl;
-                // TODO: This is not right -- doesn't give the absolute path.
-                path = boost::filesystem::path(th.name());
-            }
-            
-            const bool exists = boost::filesystem::exists(path);
-            const bool dir = boost::filesystem::is_directory(path);
-            const bool reg = boost::filesystem::is_regular_file(path);
-            
-            cout << "File exists: " << exists << endl;
-            cout << "is dir: " << dir << endl;
-            cout << "is reg: " << reg << endl;
-			return path;
-             */
-            return NULL;
-		}
     
         string const get_name_for_torrent(const char* torrentPath) 
         {
@@ -692,7 +660,8 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_stop(JNIEnv * env , j
 }
 
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
-    JNIEnv * env, jobject obj, jstring jIncompleteDir, jstring arg, jint size
+    JNIEnv * env, jobject obj, jstring jIncompleteDir, jstring arg, jint size,
+    jboolean sequential
     )
 {
     const char * incompleteDir = env->GetStringUTFChars(jIncompleteDir, JNI_FALSE);
@@ -711,7 +680,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 	}
 	
 	const libtorrent::torrent_handle handle = session::instance().download_torrent(
-        incompleteDir, torrentPath, size
+        incompleteDir, torrentPath, size, sequential
     );
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
@@ -735,29 +704,6 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return index;	
-}
-
-JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1save_1path_1for_1torrent(
-    JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got save path request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	
-	boost::filesystem::path path = 
-		session::instance().get_full_save_path_for_torrent(torrentPath); 
-	const char * savePath = path.string().c_str();
-	
-	env->ReleaseStringUTFChars(arg, torrentPath);
-    cout << "Returning path..." << savePath << endl;
-	const jstring finalPath = env->NewStringUTF(savePath);
-    cout << "Returning java path..." << endl;    
-    return finalPath;
 }
 
 JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1torrent(
