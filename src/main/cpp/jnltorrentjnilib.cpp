@@ -170,6 +170,8 @@ class session : private boost::noncopyable
                 return libtorrent::torrent_handle();
             }
 
+            
+            std::cout << "Using incomplete dir" << incompleteDir << endl;
 			libtorrent::add_torrent_params p;
 			p.save_path = incompleteDir;
             
