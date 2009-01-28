@@ -449,7 +449,10 @@ class session : private boost::noncopyable
 		{
 			using namespace libtorrent;
 			const torrent_handle th = handle(torrentPath);
-			m_session->remove_torrent(th);
+            if (th.isValid())
+            {
+                m_session->remove_torrent(th);
+            }
 		}
     
         const libtorrent::torrent_info info(const char* torrentPath) 
