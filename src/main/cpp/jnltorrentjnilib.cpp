@@ -177,13 +177,15 @@ class session : private boost::noncopyable
 			p.save_path = incompleteDir;
             
             cout << "Save path for torrent is: " << incompleteDir << endl;
+            cout << "Sequential: " << sequential << endl;
+            
 
             p.ti = new libtorrent::torrent_info(e);
             p.auto_managed = true;
             
             // Compact mode for single file torrents.
             p.storage_mode = 
-                (sequential) ? 
+                sequential ? 
                 libtorrent::storage_mode_compact : 
                 libtorrent::storage_mode_sparse
             ;
