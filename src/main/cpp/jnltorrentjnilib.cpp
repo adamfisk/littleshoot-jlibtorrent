@@ -102,6 +102,8 @@ class session : private boost::noncopyable
 			settings.user_agent = "LittleShoot/1.0 libtorrent/"
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
+            settings.ignore_limits_on_local_network = true;
+            settings.share_ratio_limit = 2.0;
             
             m_session->set_alert_mask(
                 libtorrent::alert::port_mapping_notification | 
@@ -170,7 +172,6 @@ class session : private boost::noncopyable
                 
                 return libtorrent::torrent_handle();
             }
-
             
             std::cout << "Using incomplete dir" << incompleteDir << endl;
 			libtorrent::add_torrent_params p;
@@ -179,7 +180,6 @@ class session : private boost::noncopyable
             cout << "Save path for torrent is: " << incompleteDir << endl;
             cout << "Sequential: " << sequential << endl;
             
-
             p.ti = new libtorrent::torrent_info(e);
             p.auto_managed = true;
             
@@ -467,6 +467,11 @@ class session : private boost::noncopyable
             using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
             return th.status();
+        }
+    
+        const libtorrent::session_status session_status()
+        {
+            return m_session->status();
         }
     
         const boost::shared_ptr<libtorrent::session> & get_session()
@@ -930,4 +935,44 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     session::instance().handle(torrentPath).auto_managed(true);
     env->ReleaseStringUTFChars(arg, torrentPath);
 }
+
+JNIEXPORT jfloat JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1upload_1rate
+(JNIEnv * env, jobject obj)
+{
+    return session::instance().session_status().upload_rate;
+}
+
+/*
+ * Class:     org_lastbamboo_jni_JLibTorrent
+ * Method:    get_download_rate
+ * Signature: ()F
+ */
+JNIEXPORT jfloat JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1download_1rate
+(JNIEnv * env, jobject obj)
+{
+    return session::instance().session_status().download_rate;
+}
+
+/*
+ * Class:     org_lastbamboo_jni_JLibTorrent
+ * Method:    get_total_download_bytes
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1total_1download_1bytes
+(JNIEnv * env, jobject obj)
+{
+    return session::instance().session_status().total_download;
+}
+
+/*
+ * Class:     org_lastbamboo_jni_JLibTorrent
+ * Method:    get_total_upload_bytes
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1total_1upload_1bytes
+(JNIEnv * env, jobject obj)
+{
+    return session::instance().session_status().total_upload;
+}
+
 
