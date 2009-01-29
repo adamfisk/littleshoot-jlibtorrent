@@ -10,6 +10,12 @@ import java.util.Collection;
 public class JLibTorrent
     {
     
+    private long m_totalUploadBytes;
+    private long m_totalDownloadBytes;
+    private float m_uploadRate;
+    private float m_downloadRate;
+    private int m_numPeers;
+
     public JLibTorrent(final Collection<File> libFiles)
         {
         boolean libLoaded = false;
@@ -54,7 +60,14 @@ public class JLibTorrent
         
         final Thread hook = new Thread(hookRunner, "LibTorrent-Shutdown-Thread");
         Runtime.getRuntime().addShutdownHook(hook);
+        
+        cacheMethodIds();
         start();
+        }
+    
+    public void updateSessionStatus() 
+        {
+        update_session_status();
         }
     
     public void download(final File incompleteDir, final File torrentFile, 
@@ -148,6 +161,7 @@ public class JLibTorrent
         return get_bytes_read_for_torrent(path);
         }
     
+    /*
     public float getUploadRate()
         {
         return get_upload_rate();
@@ -167,6 +181,7 @@ public class JLibTorrent
         {
         return get_total_upload_bytes();
         }
+        */
     
     private final String normalizePath(final File torrentFile)
         {
@@ -179,6 +194,10 @@ public class JLibTorrent
             return torrentFile.getAbsolutePath();
             }
         }
+    
+    private native void cacheMethodIds();
+    
+    private native void update_session_status();
     
     private native float get_upload_rate();
     private native float get_download_rate();
@@ -221,6 +240,56 @@ public class JLibTorrent
     
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential);
+
+    private void setTotalUploadBytes(final long totalUploadBytes)
+        {
+        m_totalUploadBytes = totalUploadBytes;
+        }
+
+    public long getTotalUploadBytes()
+        {
+        return m_totalUploadBytes;
+        }
+
+    private void setTotalDownloadBytes(final long totalDownloadBytes)
+        {
+        m_totalDownloadBytes = totalDownloadBytes;
+        }
+
+    public long getTotalDownloadBytes()
+        {
+        return m_totalDownloadBytes;
+        }
+
+    private void setDownloadRate(final float downloadRate)
+        {
+        m_downloadRate = downloadRate;
+        }
+
+    public float getDownloadRate()
+        {
+        return m_downloadRate;
+        }
+
+    private void setUploadRate(float uploadRate)
+        {
+        m_uploadRate = uploadRate;
+        }
+
+    public float getUploadRate()
+        {
+        return m_uploadRate;
+        }
+
+    private void setNumPeers(int numPeers)
+        {
+        m_numPeers = numPeers;
+        }
+
+    public int getNumPeers()
+        {
+        return m_numPeers;
+        }
 
     
     }

@@ -975,4 +975,65 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1total_1upload_1
     return session::instance().session_status().total_upload;
 }
 
+void checkMethodId(const jmethodID field)
+{
+    if (field == NULL) 
+    {
+        cerr << "Missing method ID" << endl;
+        return; /* method not found */
+    }
+}
+
+const jmethodID floatMethodId(JNIEnv * env, const jclass cls, const char * methodName)
+{
+    const jmethodID id = env->GetMethodID(cls, methodName, "(F)V");
+    checkMethodId(id);
+    return id;
+}
+
+const jmethodID longMethodId(JNIEnv * env, const jclass cls, const char * methodName)
+{
+    const jmethodID id = env->GetMethodID(cls, methodName, "(J)V");
+    checkMethodId(id);
+    return id;
+}
+
+const jmethodID intMethodId(JNIEnv * env, const jclass cls, const char * methodName)
+{
+    const jmethodID id = env->GetMethodID(cls, methodName, "(I)V");
+    checkMethodId(id);
+    return id;
+}
+
+jmethodID m_sessionStatusTotalUpload;
+jmethodID m_sessionStatusTotalDownload;
+jmethodID m_sessionStatusUploadRate;
+jmethodID m_sessionStatusDownloadRate;
+jmethodID m_sessionStatusNumPeers;
+//jmethodID m_sessionStatusTotalUpload;
+//jmethodID m_sessionStatusTotalUpload;
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1status
+(JNIEnv * env, jobject obj)
+{
+    const libtorrent::session_status stat = session::instance().session_status();
+    env->CallVoidMethod(obj, m_sessionStatusTotalUpload, stat.total_upload);
+    env->CallVoidMethod(obj, m_sessionStatusTotalDownload, stat.total_download);
+    env->CallVoidMethod(obj, m_sessionStatusUploadRate, stat.upload_rate);
+    env->CallVoidMethod(obj, m_sessionStatusDownloadRate, stat.download_rate);
+    env->CallVoidMethod(obj, m_sessionStatusNumPeers, stat.num_peers);
+}
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
+(JNIEnv * env, jobject obj)
+{
+    cout << "Caching method IDs" << endl;
+    const jclass cls = env->GetObjectClass(obj);
+    m_sessionStatusTotalUpload = longMethodId(env, cls,"setTotalUploadBytes");
+    m_sessionStatusTotalDownload = longMethodId(env, cls, "setTotalDownloadBytes");
+    m_sessionStatusUploadRate = floatMethodId(env, cls, "setUploadRate");
+    m_sessionStatusDownloadRate = floatMethodId(env, cls, "setDownloadRate");
+    m_sessionStatusDownloadRate = intMethodId(env, cls, "setNumPeers");
+}
+
+
 
