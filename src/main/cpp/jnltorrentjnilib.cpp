@@ -99,7 +99,7 @@ class session : private boost::noncopyable
 
 			libtorrent::session_settings settings;
 
-			settings.user_agent = "LittleShoot/1.0 libtorrent/"
+			settings.user_agent = "LittleShoot/0.84 libtorrent/"
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
             settings.ignore_limits_on_local_network = true;
@@ -198,7 +198,7 @@ class session : private boost::noncopyable
             
             handle.set_sequential_download(sequential);
             handle.set_max_connections(50);
-            handle.set_max_uploads(-1);
+            //handle.set_max_uploads(-1);
             handle.set_upload_limit(1024 * 32);
             handle.set_download_limit(-1);
             
@@ -263,91 +263,76 @@ class session : private boost::noncopyable
 		const long get_index_for_torrent(const char* torrentPath)
 		{
 			using namespace libtorrent;
-			const string stringPath = torrentPath;
-			const TorrentPathToDownloadHandle::iterator iter = 
-				m_torrent_path_to_handle.find(stringPath);
-			if (iter != m_torrent_path_to_handle.end())
-			{
-				log_debug("Found torrent");
-                
-				const torrent_handle th = iter->second;
-				
-				if (!th.has_metadata()) 
-				{
-					log_debug("No metadata for torrent");
-					return -1;
-				}
-				if (!th.is_valid()) 
-				{
-					log_debug("Torrent not valid"); 
-					return -1;
-				}
-				const torrent_info ti = th.get_torrent_info();
-				const torrent_status status = th.status();
-				if (is_finished(th))
-				{
-					log_debug("File is finished!!!");
-					return ti.total_size();
-				}
-				
-				log_debug("Download rate: " << status.download_rate);
-				
-				const sha1_hash sha1 = th.info_hash();
-				
-				unsigned int index = 0;
-				const InfoHashToIndexMap::iterator iter = m_piece_to_index_map.find(sha1);
-				if (iter != m_piece_to_index_map.end())
-				{
-					index = iter->second;
-					log_debug("Found existing index: " << index);
-					//return index;
-				}
-				else
-				{
-					log_debug("No existing torrent");
-					m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
-					return -1;
-				}
-				const unsigned int numPieces = status.pieces.size();
-				//cout << "Num pieces is: " << numPieces << endl;
-				for (unsigned int j = index; j < numPieces; j++)
-				{
-					if (status.pieces[j])
-					{
-						log_debug("Found piece at index: " << j);
-						// We have this piece -- stream it.
-					} else
-					{
-						// We do not have this piece -- set the index and
-						// break.
-                        log_debug("Setting index to: " << j);
-						m_piece_to_index_map[sha1] = j;
-						
-						log_debug("index: " << j);
-						log_debug("piece length is: " << ti.piece_length());
-						log_debug("num pieces is: " << ti.num_pieces());
-						
-						const unsigned long maxByte = j * ti.piece_length();
-						
-						log_debug("max byte is: " << maxByte);
+            const torrent_handle th = handle(torrentPath);
+            if (!th.has_metadata()) 
+            {
+                log_debug("No metadata for torrent");
+                return -1;
+            }
+            if (!th.is_valid()) 
+            {
+                log_debug("Torrent not valid"); 
+                return -1;
+            }
+            
+            const torrent_status status = th.status();
+            log_debug("Download rate: " << status.download_rate);
+            const torrent_info ti = th.get_torrent_info();
+            if (is_finished(status))
+            {
+                log_debug("File is finished!!!");
+                return ti.total_size();
+            }
+            
+            const sha1_hash sha1 = th.info_hash();
+            
+            unsigned int index = 0;
+            const InfoHashToIndexMap::iterator iter = m_piece_to_index_map.find(sha1);
+            if (iter != m_piece_to_index_map.end())
+            {
+                index = iter->second;
+                log_debug("Found existing index: " << index);
+                //return index;
+            }
+            else
+            {
+                log_debug("No existing torrent");
+                m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
+                return -1;
+            }
+            const unsigned int numPieces = status.pieces.size();
+            //cout << "Num pieces is: " << numPieces << endl;
+            for (unsigned int j = index; j < numPieces; j++)
+            {
+                if (status.pieces[j])
+                {
+                    log_debug("Found piece at index: " << j);
+                    // We have this piece -- stream it.
+                } else
+                {
+                    // We do not have this piece -- set the index and
+                    // break.
+                    log_debug("Setting index to: " << j);
+                    m_piece_to_index_map[sha1] = j;
+                    
+                    log_debug("index: " << j);
+                    log_debug("piece length is: " << ti.piece_length());
+                    log_debug("num pieces is: " << ti.num_pieces());
+                    
+                    const unsigned long maxByte = j * ti.piece_length();
+                    
+                    log_debug("max byte is: " << maxByte);
 
-						return maxByte;
-					}
-				}
-				return index * ti.piece_length();
-			}
-			else
-			{
-				// We don't yet know about the torrent.  
-				log_debug("No torrent found at " << torrentPath);
-				return -1;
-			}
+                    return maxByte;
+                }
+            }
+            return index * ti.piece_length();
 		}
 	
-        const bool is_finished(const libtorrent::torrent_handle& th)
+        const bool is_finished(const libtorrent::torrent_status& status)
         {
             using namespace libtorrent;
-            const torrent_status status = th.status();
+            //const torrent_status status = th.status();
             const torrent_status::state_t s = status.state;
            // cout << "Found state: " << s << endl;
             if (s == torrent_status::finished)
@@ -426,11 +411,6 @@ class session : private boost::noncopyable
             }
         }
     
-        const int get_num_files_for_torrent(const char* torrentPath) 
-        {
-            return info(torrentPath).num_files();
-        }
-    
         const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
         {
             const libtorrent::torrent_handle th = 
@@ -459,6 +439,8 @@ class session : private boost::noncopyable
         {
             using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
+            
+            // TODO: Check if handle is valid.  If not, return empty struct
             return th.get_torrent_info();
         }
             
@@ -466,6 +448,8 @@ class session : private boost::noncopyable
         {
             using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
+            
+            // TODO: Check if handle is valid.  If not, return empty struct
             return th.status();
         }
     
@@ -804,7 +788,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
-	const int numFiles = session::instance().get_num_files_for_torrent(torrentPath); 
+	const int numFiles = session::instance().info(torrentPath).num_files();
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return numFiles;
@@ -936,45 +920,6 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     env->ReleaseStringUTFChars(arg, torrentPath);
 }
 
-JNIEXPORT jfloat JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1upload_1rate
-(JNIEnv * env, jobject obj)
-{
-    return session::instance().session_status().upload_rate;
-}
-
-/*
- * Class:     org_lastbamboo_jni_JLibTorrent
- * Method:    get_download_rate
- * Signature: ()F
- */
-JNIEXPORT jfloat JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1download_1rate
-(JNIEnv * env, jobject obj)
-{
-    return session::instance().session_status().download_rate;
-}
-
-/*
- * Class:     org_lastbamboo_jni_JLibTorrent
- * Method:    get_total_download_bytes
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1total_1download_1bytes
-(JNIEnv * env, jobject obj)
-{
-    return session::instance().session_status().total_download;
-}
-
-/*
- * Class:     org_lastbamboo_jni_JLibTorrent
- * Method:    get_total_upload_bytes
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1total_1upload_1bytes
-(JNIEnv * env, jobject obj)
-{
-    return session::instance().session_status().total_upload;
-}
-
 void checkMethodId(const jmethodID field)
 {
     if (field == NULL) 
@@ -1032,7 +977,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
     m_sessionStatusTotalDownload = longMethodId(env, cls, "setTotalDownloadBytes");
     m_sessionStatusUploadRate = floatMethodId(env, cls, "setUploadRate");
     m_sessionStatusDownloadRate = floatMethodId(env, cls, "setDownloadRate");
-    m_sessionStatusDownloadRate = intMethodId(env, cls, "setNumPeers");
+    m_sessionStatusNumPeers = intMethodId(env, cls, "setNumPeers");
 }
 
 

@@ -9,7 +9,7 @@ import java.util.Collection;
  */
 public class JLibTorrent
     {
-    
+
     private long m_totalUploadBytes;
     private long m_totalDownloadBytes;
     private float m_uploadRate;
@@ -161,28 +161,6 @@ public class JLibTorrent
         return get_bytes_read_for_torrent(path);
         }
     
-    /*
-    public float getUploadRate()
-        {
-        return get_upload_rate();
-        }
-    
-    public float getDownloadRate()
-        {
-        return get_download_rate();
-        }
-        
-    public long getTotalDownloadBytes()
-        {
-        return get_total_download_bytes();
-        }
-    
-    public long getTotalUploadBytes()
-        {
-        return get_total_upload_bytes();
-        }
-        */
-    
     private final String normalizePath(final File torrentFile)
         {
         try
@@ -198,11 +176,6 @@ public class JLibTorrent
     private native void cacheMethodIds();
     
     private native void update_session_status();
-    
-    private native float get_upload_rate();
-    private native float get_download_rate();
-    private native long get_total_download_bytes();
-    private native long get_total_upload_bytes();
     
     private native String move_to_downloads_dir(final String path);
     
@@ -240,6 +213,8 @@ public class JLibTorrent
     
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential);
+    
+    
 
     private void setTotalUploadBytes(final long totalUploadBytes)
         {
