@@ -12,8 +12,12 @@ public class JLibTorrent
 
     private long m_totalUploadBytes;
     private long m_totalDownloadBytes;
+    private long m_totalPayloadUploadBytes;
+    private long m_totalPayloadDownloadBytes;
     private float m_uploadRate;
     private float m_downloadRate;
+    private float m_payloadUploadRate;
+    private float m_payloadDownloadRate;
     private int m_numPeers;
 
     public JLibTorrent(final Collection<File> libFiles)
@@ -49,18 +53,6 @@ public class JLibTorrent
     
     private void init()
         {
-        final Runnable hookRunner = new Runnable()
-            {
-            public void run()
-                {
-                System.out.println("Stopping LibTorrent...");
-                stop();
-                }
-            };
-        
-        final Thread hook = new Thread(hookRunner, "LibTorrent-Shutdown-Thread");
-        Runtime.getRuntime().addShutdownHook(hook);
-        
         cacheMethodIds();
         start();
         }
@@ -209,7 +201,7 @@ public class JLibTorrent
     /**
      * Shuts down the libtorrent core.
      */
-    private native void stop();
+    public native void stop();
     
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential);
@@ -264,6 +256,46 @@ public class JLibTorrent
     public int getNumPeers()
         {
         return m_numPeers;
+        }
+
+    private void setPayloadUploadRate(float payloadUploadRate)
+        {
+        m_payloadUploadRate = payloadUploadRate;
+        }
+
+    public float getPayloadUploadRate()
+        {
+        return m_payloadUploadRate;
+        }
+
+    private void setPayloadDownloadRate(float payloadDownloadRate)
+        {
+        m_payloadDownloadRate = payloadDownloadRate;
+        }
+
+    public float getPayloadDownloadRate()
+        {
+        return m_payloadDownloadRate;
+        }
+
+    private void setTotalPayloadUploadBytes(long totalPayloadUploadBytes)
+        {
+        m_totalPayloadUploadBytes = totalPayloadUploadBytes;
+        }
+
+    public long getTotalPayloadUploadBytes()
+        {
+        return m_totalPayloadUploadBytes;
+        }
+
+    private void setTotalPayloadDownloadBytes(final long totalPayloadDownloadBytes)
+        {
+        m_totalPayloadDownloadBytes = totalPayloadDownloadBytes;
+        }
+
+    public long getTotalPayloadDownloadBytes()
+        {
+        return m_totalPayloadDownloadBytes;
         }
 
     

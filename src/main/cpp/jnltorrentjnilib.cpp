@@ -369,26 +369,6 @@ class session : private boost::noncopyable
             return name;
         }
     
-        const libtorrent::size_type get_size_for_torrent(const char* torrentPath) 
-		{
-			return info(torrentPath).total_size();
-		}
-	
-        const long get_bytes_read_for_torrent(const char* torrentPath) 
-        {
-            return status(torrentPath).total_wanted_done;
-        }
-    
-        const int get_num_peers_for_torrent(const char* torrentPath) 
-        {
-            return status(torrentPath).num_peers;
-        }
-     
-        const float get_download_rate_for_torrent(const char* torrentPath)
-        {
-            return status(torrentPath).download_rate;
-        }
-    
         int get_state_for_torrent(const char* torrentPath) 
         {
             const libtorrent::torrent_handle th = handle(torrentPath);
@@ -642,14 +622,12 @@ class session : private boost::noncopyable
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent start" << std::endl;
-    
     session::instance().start();
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_stop(JNIEnv * env , jobject obj)
 {
     std::cout << "jnltorrent stop" << std::endl;
-    
     session::instance().stop();
 }
 
@@ -733,7 +711,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 	}
 	
 	const libtorrent::size_type size = 
-		session::instance().get_size_for_torrent(torrentPath); 
+		session::instance().info(torrentPath).total_size();
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
   //  cout << "Returning size..." << endl;
@@ -808,18 +786,13 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1fo
 	}
 	 
     const long bytesRead = 
-        session::instance().get_bytes_read_for_torrent(torrentPath);
+        session::instance().status(torrentPath).total_wanted_done;
 	
    // cout << "Bytes read: " << bytesRead << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return bytesRead;
 }
 
-/*
- * Class:     org_lastbamboo_jni_JLibTorrent
- * Method:    get_num_peers_for_torrent
- * Signature: (Ljava/lang/String;)I
- */
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 )
@@ -832,19 +805,13 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_
 		return NULL; /* OutOfMemoryError already thrown */
 	}
     
-    const int numPeers = 
-        session::instance().get_num_peers_for_torrent(torrentPath);
+    const int numPeers = session::instance().status(torrentPath).num_peers;
 	
     log_debug("Num peers: " << numPeers);
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return numPeers;
 }
 
-/*
- * Class:     org_lastbamboo_jni_JLibTorrent
- * Method:    get_speed_for_torrent
- * Signature: (Ljava/lang/String;)D
- */
 JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 )
@@ -858,7 +825,7 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
 	}
     
     const float downloadRate = 
-        session::instance().get_download_rate_for_torrent(torrentPath);
+        session::instance().status(torrentPath).download_payload_rate;
 	
   //  cout << "Speed: " << downloadRate << endl;
 	env->ReleaseStringUTFChars(arg, torrentPath);
@@ -952,21 +919,14 @@ const jmethodID intMethodId(JNIEnv * env, const jclass cls, const char * methodN
 
 jmethodID m_sessionStatusTotalUpload;
 jmethodID m_sessionStatusTotalDownload;
+jmethodID m_sessionStatusTotalPayloadUpload;
+jmethodID m_sessionStatusTotalPayloadDownload;
 jmethodID m_sessionStatusUploadRate;
 jmethodID m_sessionStatusDownloadRate;
+jmethodID m_sessionStatusPayloadUploadRate;
+jmethodID m_sessionStatusPayloadDownloadRate;
 jmethodID m_sessionStatusNumPeers;
-//jmethodID m_sessionStatusTotalUpload;
-//jmethodID m_sessionStatusTotalUpload;
-JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1status
-(JNIEnv * env, jobject obj)
-{
-    const libtorrent::session_status stat = session::instance().session_status();
-    env->CallVoidMethod(obj, m_sessionStatusTotalUpload, stat.total_upload);
-    env->CallVoidMethod(obj, m_sessionStatusTotalDownload, stat.total_download);
-    env->CallVoidMethod(obj, m_sessionStatusUploadRate, stat.upload_rate);
-    env->CallVoidMethod(obj, m_sessionStatusDownloadRate, stat.download_rate);
-    env->CallVoidMethod(obj, m_sessionStatusNumPeers, stat.num_peers);
-}
+
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
 (JNIEnv * env, jobject obj)
@@ -975,10 +935,30 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
     const jclass cls = env->GetObjectClass(obj);
     m_sessionStatusTotalUpload = longMethodId(env, cls,"setTotalUploadBytes");
     m_sessionStatusTotalDownload = longMethodId(env, cls, "setTotalDownloadBytes");
+    m_sessionStatusTotalPayloadUpload = longMethodId(env, cls,"setTotalPayloadUploadBytes");
+    m_sessionStatusTotalPayloadDownload = longMethodId(env, cls, "setTotalPayloadDownloadBytes");
     m_sessionStatusUploadRate = floatMethodId(env, cls, "setUploadRate");
     m_sessionStatusDownloadRate = floatMethodId(env, cls, "setDownloadRate");
+    m_sessionStatusPayloadUploadRate = floatMethodId(env, cls, "setPayloadUploadRate");
+    m_sessionStatusPayloadDownloadRate = floatMethodId(env, cls, "setPayloadDownloadRate");
     m_sessionStatusNumPeers = intMethodId(env, cls, "setNumPeers");
 }
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1status
+(JNIEnv * env, jobject obj)
+{
+    const libtorrent::session_status stat = session::instance().session_status();
+    env->CallVoidMethod(obj, m_sessionStatusTotalUpload, stat.total_upload);
+    env->CallVoidMethod(obj, m_sessionStatusTotalDownload, stat.total_download);
+    env->CallVoidMethod(obj, m_sessionStatusTotalPayloadUpload, stat.total_payload_upload);
+    env->CallVoidMethod(obj, m_sessionStatusTotalPayloadDownload, stat.total_payload_download);
+    env->CallVoidMethod(obj, m_sessionStatusUploadRate, stat.upload_rate);
+    env->CallVoidMethod(obj, m_sessionStatusDownloadRate, stat.download_rate);
+    env->CallVoidMethod(obj, m_sessionStatusPayloadUploadRate, stat.payload_upload_rate);
+    env->CallVoidMethod(obj, m_sessionStatusPayloadDownloadRate, stat.payload_download_rate);
+    env->CallVoidMethod(obj, m_sessionStatusNumPeers, stat.num_peers);
+}
+
 
 
 
