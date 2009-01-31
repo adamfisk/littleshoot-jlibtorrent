@@ -354,7 +354,12 @@ class session : private boost::noncopyable
         string const get_name_for_torrent(const char* torrentPath) 
         {
             using namespace libtorrent;
-            const torrent_info ti = info(torrentPath);
+            const torrent_handle th = handle(torrentPath);
+            if (!th.is_valid() || !th.has_metadata())
+            {
+                return "";
+            }
+            const torrent_info ti = th.get_torrent_info();
             string name;
             if (ti.num_files() == 1)
             {
@@ -373,6 +378,10 @@ class session : private boost::noncopyable
         {
             const libtorrent::torrent_handle th = handle(torrentPath);
             //const libtorrent::torrent_status stat = status(torrentPath);
+            if (!th.is_valid() || !th.has_metadata())
+            {
+                return 201;
+            }
             if (th.is_paused())
             {
                 return 200;
@@ -393,8 +402,7 @@ class session : private boost::noncopyable
     
         const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
         {
-            const libtorrent::torrent_handle th = 
-                handle(torrentPath);
+            const libtorrent::torrent_handle th = handle(torrentPath);
             const boost::filesystem::path savePath = th.save_path();
             cout << "Save path is: " << savePath.string() << endl;
             const boost::filesystem::path tempDir = savePath.parent_path();
@@ -415,6 +423,7 @@ class session : private boost::noncopyable
             }
 		}
     
+    /*
         const libtorrent::torrent_info info(const char* torrentPath) 
         {
             using namespace libtorrent;
@@ -428,6 +437,7 @@ class session : private boost::noncopyable
                 return empty;
             }
         }
+     */
             
         const libtorrent::torrent_status status(const char* torrentPath) 
         {
@@ -720,8 +730,15 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
-	const libtorrent::size_type size = 
-		session::instance().info(torrentPath).total_size();
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    libtorrent::size_type size;
+    if (th.is_valid() && th.has_metadata())
+    {
+        size = th.get_torrent_info().total_size();
+    } else
+    { 
+        size = 0;
+    }
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
   //  cout << "Returning size..." << endl;
@@ -776,7 +793,15 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
-	const int numFiles = session::instance().info(torrentPath).num_files();
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    int numFiles;
+    if (th.is_valid() && th.has_metadata())
+    {
+        numFiles = th.get_torrent_info().num_files();
+    } else
+    { 
+        numFiles = 0;
+    }
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	return numFiles;
