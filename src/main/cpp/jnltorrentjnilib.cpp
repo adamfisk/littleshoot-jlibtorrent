@@ -379,6 +379,8 @@ class session : private boost::noncopyable
             const libtorrent::torrent_handle th = handle(torrentPath);
             if (!th.is_valid() || !th.has_metadata())
             {
+                // This will happen when the torrent is canceled as well as
+                // failed for some reason.
                 return 201;
             }
             if (th.is_paused())
