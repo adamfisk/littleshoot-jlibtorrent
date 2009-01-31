@@ -419,18 +419,28 @@ class session : private boost::noncopyable
         {
             using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
-            
-            // TODO: Check if handle is valid.  If not, return empty struct
-            return th.get_torrent_info();
+            if (th.is_valid() && th.has_metadata())
+            {
+                return th.get_torrent_info();
+            } else
+            {
+                const static torrent_info empty(sha1_hash(0));
+                return empty;
+            }
         }
             
         const libtorrent::torrent_status status(const char* torrentPath) 
         {
             using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
-            
-            // TODO: Check if handle is valid.  If not, return empty struct
-            return th.status();
+            if (th.is_valid() && th.has_metadata())
+            {
+                return th.status();
+            } else
+            {
+                const torrent_status st;
+                return st;
+            }
         }
     
         const libtorrent::session_status session_status()
