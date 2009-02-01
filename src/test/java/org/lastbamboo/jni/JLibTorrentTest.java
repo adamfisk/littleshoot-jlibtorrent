@@ -54,6 +54,7 @@ public class JLibTorrentTest
             }
 
         System.out.println("Stopping torrent...");
+        torrent.stop();
         }
     
     private File downloadTorrentFile(final String uri) throws IOException
