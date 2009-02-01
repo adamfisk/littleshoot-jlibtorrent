@@ -18,6 +18,7 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/progress.hpp>
+#include <boost/function.hpp>
 
 #include <libtorrent/session.hpp>
 #include <libtorrent/alert.hpp>
@@ -617,6 +618,140 @@ class session : private boost::noncopyable
 #endif // ENABLE_MESSAGE_QUEUE
 };
 
+void voidCall(const char* torrentPath, void (*pt2Func)(const char *))
+{
+    try
+    { 
+        pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+}
+
+void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return; // OutOfMemoryError already thrown 
+	}
+    try
+    { 
+        pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+}
+
+long longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return -1; // OutOfMemoryError already thrown 
+	}
+    
+    long toReturn = -1;
+    try
+    { 
+        toReturn = pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    
+    env->ReleaseStringUTFChars(arg, torrentPath);
+    return toReturn;
+}
+
+int intCall(JNIEnv * env, const jstring& arg, int (*pt2Func)(const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return -1; // OutOfMemoryError already thrown 
+	}
+    
+    int toReturn = -1;
+    try
+    { 
+        toReturn = pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    
+    env->ReleaseStringUTFChars(arg, torrentPath);
+    return toReturn;
+}
+
+float floatCall(JNIEnv * env, const jstring& arg, float (*pt2Func)(const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return -1; // OutOfMemoryError already thrown 
+	}
+    
+    float toReturn = -1;
+    try
+    { 
+        toReturn = pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    
+    env->ReleaseStringUTFChars(arg, torrentPath);
+    return toReturn;
+}
+
+jstring const stringCall(JNIEnv * env, const jstring& arg, string const (*pt2Func)(const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return env->NewStringUTF(""); // OutOfMemoryError already thrown 
+	}
+    
+    string toReturn = "";
+    try
+    { 
+        toReturn = pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    
+    env->ReleaseStringUTFChars(arg, torrentPath);
+    return env->NewStringUTF(toReturn.c_str());
+}
+
 // Java function to C interfaces.
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(JNIEnv * env , jobject obj)
@@ -667,322 +802,134 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 	return 0;
 }
 
+long indexFunc(const char* torrentPath)
+{    
+    return session::instance().get_index_for_torrent(torrentPath);
+}
     
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_1torrent(
 	JNIEnv * env, jobject obj, jstring arg
-	)
+) {return longCall(env, arg, &indexFunc);}
+ 
+
+string const nameFunc(const char* torrentPath)
 {
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return -1; /* OutOfMemoryError already thrown */
-	}
-	
-    long index = 0;
-    try
-    { 
-        index = session::instance().get_index_for_torrent(torrentPath);
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-    
-	
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return index;	
+    return session::instance().get_name_for_torrent(torrentPath);
 }
-    
 JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	
-    string name;
-    try
-    { 
-        name = session::instance().get_name_for_torrent(torrentPath);
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-	
-	env->ReleaseStringUTFChars(arg, torrentPath);
-    cout << "Returning name..." << endl;
-	return env->NewStringUTF(name.c_str());
-}
+){return stringCall(env, arg, &nameFunc);}
 
+
+long sizeFunc(const char* torrentPath)
+{    
+    return session::instance().status(torrentPath).total_wanted;
+}
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	//std::cout << "Got size request for torrent:" << torrentPath << std::endl;
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	
-    const long size = session::instance().status(torrentPath).total_wanted;
-	
-	env->ReleaseStringUTFChars(arg, torrentPath);
-  //  cout << "Returning size..." << endl;
-	return size;
-}
+) {return longCall(env, arg, &sizeFunc);}
 
-    
+
+void removeFunc(const char* torrentPath)
+{    
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    if (th.is_valid())
+    {
+        session::instance().get_session()->remove_torrent(th);
+    }
+}    
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got cancel request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return; /* OutOfMemoryError already thrown */
-	}
-	
-    try
-    {
-        const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
-        if (th.is_valid())
-        {
-           session::instance().get_session()->remove_torrent(th);
-        }
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-	env->ReleaseStringUTFChars(arg, torrentPath);
-}
+) {return voidCall(env, arg, &removeFunc);}
 
+
+int stateFunc(const char* torrentPath)
+{    
+    return session::instance().get_state_for_torrent(torrentPath); 
+}
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torrent(
 	JNIEnv * env, jobject obj, jstring arg
-)
+) {return intCall(env, arg, &stateFunc);}
+
+
+int numFilesFunc(const char* torrentPath)
 {
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got state request for torrent:" << torrentPath);
-    if (!torrentPath)
+    const libtorrent::torrent_handle th = 
+        session::instance().handle(torrentPath);
+    
+    if (th.is_valid() && th.has_metadata())
     {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	
-    int state = 201;
-    try
-    {
-        state = session::instance().get_state_for_torrent(torrentPath); 
+        return th.get_torrent_info().num_files();
+    } else
+    { 
+        return 0;
     }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-
-    log_debug("Returning state: " << state);
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return state;
 }
-
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got num files request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	
-    int numFiles = 0;
-    try
-    { 
-        const libtorrent::torrent_handle th = 
-            session::instance().handle(torrentPath);
-        
-        if (th.is_valid() && th.has_metadata())
-        {
-            numFiles = th.get_torrent_info().num_files();
-        } else
-        { 
-            numFiles = 0;
-        }
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-	
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return numFiles;
+) {return intCall(env, arg, &numFilesFunc);}
+
+
+long bytesReadFunc(const char* torrentPath)
+{    
+    return session::instance().status(torrentPath).total_wanted_done; 
 }
-    
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got bytes read request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-	 
-    const long bytesRead = 
-        session::instance().status(torrentPath).total_wanted_done;
-	
-   // cout << "Bytes read: " << bytesRead << endl;
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return bytesRead;
-}
+) {return longCall(env, arg, &bytesReadFunc);}
 
+
+int numPeersFunc(const char* torrentPath)
+{    
+    return session::instance().status(torrentPath).num_peers;
+}
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got num peers request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		log_debug("Out of memory!!");
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-    
-    const int numPeers = session::instance().status(torrentPath).num_peers;
-	
-    log_debug("Num peers: " << numPeers);
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return numPeers;
-}
+) {return intCall(env, arg, &numPeersFunc);}
 
+
+float speedFunc(const char* torrentPath)
+{    
+    return session::instance().status(torrentPath).download_payload_rate;
+}
 JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	log_debug("Got speed request for torrent:" << torrentPath);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
-    
-    const float downloadRate = 
-        session::instance().status(torrentPath).download_payload_rate;
-	
-  //  cout << "Speed: " << downloadRate << endl;
-	env->ReleaseStringUTFChars(arg, torrentPath);
-	return downloadRate;
-}
+) {return floatCall(env, arg, &speedFunc);}
 
+
+string const moveToDownloadsDirFunc(const char* torrentPath)
+{
+    const boost::filesystem::path newPath = 
+        session::instance().move_to_downloads_dir(torrentPath);
+    return newPath.string();
+}
 JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-	cout << "Moving torrent to downloads dir:" << torrentPath << endl;
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-		return NULL; /* OutOfMemoryError already thrown */
-	}
+){return stringCall(env, arg, &moveToDownloadsDirFunc);}
     
-    string pathString = "";
-    try
-    { 
-        const boost::filesystem::path newPath = 
-            session::instance().move_to_downloads_dir(torrentPath);
-        pathString = newPath.string();
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
 
-    const char * savePath = pathString.c_str();
-    env->ReleaseStringUTFChars(arg, torrentPath);
-    return env->NewStringUTF(savePath);
+void pause(const char* torrentPath)
+{
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    if (th.is_valid())
+    {
+        th.auto_managed(false);
+        th.pause();
+    }
 }
-    
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_pause_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
+){return voidCall(env, arg, &pause);}
+
+
+void resume(const char* torrentPath)
 {
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-        return;
-	}
-    
-    try
-    { 
-        const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
-        if (th.is_valid())
-        {
-            th.auto_managed(false);
-            th.pause();
-        }
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-    env->ReleaseStringUTFChars(arg, torrentPath);
+    session::instance().handle(torrentPath).auto_managed(true);
 }
-    
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-)
-{
-    const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    cout << "Resuming torrent at:" << torrentPath << endl;
-    if (!torrentPath)
-    {
-		cerr << "Out of memory!!" << endl;
-        return;
-	}
-    
-    try
-    {
-        session::instance().handle(torrentPath).auto_managed(true);
-    }
-    catch (exception & e)
-    {
-#ifndef NDEBUG
-        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
-#endif
-    }
-    
-    env->ReleaseStringUTFChars(arg, torrentPath);
-}
+){return voidCall(env, arg, &resume);}
+
 
 void checkMethodId(const jmethodID field)
 {
