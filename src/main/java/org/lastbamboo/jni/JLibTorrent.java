@@ -29,6 +29,7 @@ public class JLibTorrent
                 {
                 System.load(lib.getAbsolutePath());
                 libLoaded = true;
+                System.out.println("Loading: "+lib);
                 break;
                 }
             }
