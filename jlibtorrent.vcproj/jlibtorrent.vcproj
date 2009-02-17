@@ -136,7 +136,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ssleay32MT.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="C:\OpenSSL\lib\VC\static"
+				AdditionalLibraryDirectories="C:\OpenSSL\lib\VC\static;&quot;../../../libtorrent\libtorrent\bin\msvc-9.0\debug\boost-source\dht-support-off\link-static\runtime-link-static\threading-multi\upnp-logging-on&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
