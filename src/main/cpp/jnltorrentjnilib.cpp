@@ -153,16 +153,36 @@ class session : private boost::noncopyable
 		{
 			cout << "Building buffer of size: " << size << endl;
 			vector<char> buf(size);
-			ifstream(torrentPath, ios_base::binary).read(&buf[0], size);
+			
+			boost::filesystem::path full_path = 
+                boost::filesystem::system_complete(
+                    boost::filesystem::path(torrentPath, boost::filesystem::native));
+                
+            if (!boost::filesystem::exists(full_path))
+            {
+                log_debug("Data dir not found, creating: "
+                    << full_path.native_file_string()
+                );
+                              
+                //boost::filesystem::create_directory(full_path);
+            }
             
-            libtorrent::entry e;
+			boost::filesystem::ifstream(torrentPath, ios_base::binary).read(&buf[0], size);
             
+            //libtorrent::entry e;
+            libtorrent::lazy_entry e;
             try 
             {
-                e = libtorrent::bdecode(
-                    buf.begin(), buf.end()
-                );
-            
+                //e = libtorrent::bdecode(
+                //    buf.begin(), buf.end()
+                //);
+                int ret = lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
+
+                if (ret != 0)
+                {
+                    std::cerr << "invalid bencoding: " << ret << std::endl;
+                    return libtorrent::torrent_handle();
+                }
             }
             catch (std::exception & e)
             {
