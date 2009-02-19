@@ -4,4 +4,4 @@ javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamb
 
 devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj /build Debug
 
-cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib
+cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib/jnltorrent.dll
