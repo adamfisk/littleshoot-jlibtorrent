@@ -38,6 +38,8 @@ public class JLibTorrentTest
         final String fullPath = fullFile.getCanonicalPath();
         final JLibTorrent torrent = new JLibTorrent(fullPath);
         
+        
+        
         final String uri = "http://www.mininova.org/get/2077943";
         final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
@@ -61,13 +63,6 @@ public class JLibTorrentTest
         {
         final GetMethod method = new GetMethod(uri);
         method.addRequestHeader("connection", "close");
-        
-        /*
-        final HttpParams params = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(params, 40 * 1000);
-        HttpConnectionParams.setSoTimeout(params, 30 * 1000);
-        HttpClientParams.setRedirecting(params, true);
-        */
         
         InputStream is = null;
         final DefaultHttpClient client = new DefaultHttpClientImpl();
