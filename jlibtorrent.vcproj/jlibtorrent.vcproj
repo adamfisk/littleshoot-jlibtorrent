@@ -41,7 +41,7 @@
 				AdditionalOptions="/D BOOST_ALL_NO_LIB"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../../npapi\mozilla\nsprpub\pr\include\obsolete;../../../npapi\mozilla\nsprpub\pr\src\md\mac;../../../npapi\mozilla\nsprpub\pr\include;../../../libtorrent\libtorrent\include;c:\boost;../../../libtorrent\libtorrent\zlib;&quot;../../../npapi\mozilla\sun-java\stubs\include&quot;;../../../jni\jlibtorrent\build\headers"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS;/D _NDEBUG; /D WIN32"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -115,8 +115,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="-I ../libtorrent/libtorrent"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS;/D _NDEBUG; /D WIN32"
+				AdditionalOptions="/D BOOST_ALL_NO_LIB"
+				AdditionalIncludeDirectories="../../../npapi\mozilla\nsprpub\pr\include\obsolete;../../../npapi\mozilla\nsprpub\pr\src\md\mac;../../../npapi\mozilla\nsprpub\pr\include;../../../libtorrent\libtorrent\include;c:\boost;../../../libtorrent\libtorrent\zlib;&quot;../../../npapi\mozilla\sun-java\stubs\include&quot;;../../../jni\jlibtorrent\build\headers"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -134,9 +135,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ssleay32MT.lib"
+				AdditionalDependencies="libtorrent.lib libboost_system-mt-s.lib libboost_thread-mt-s.lib libboost_filesystem-mt-s.lib libeay32MT.lib ssleay32MT.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="C:\OpenSSL\lib\VC\static;&quot;../../../libtorrent\libtorrent\bin\msvc-9.0\debug\boost-source\dht-support-off\link-static\runtime-link-static\threading-multi\upnp-logging-on&quot;"
+				AdditionalLibraryDirectories="C:\OpenSSL\lib\VC\static;&quot;../../../libtorrent\libtorrent\bin\msvc-9.0\release\boost-source\dht-support-off\link-static\runtime-link-static\threading-multi&quot;;&quot;C:\boost\bin.v2\libs\thread\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi&quot;;&quot;C:\boost\bin.v2\libs\system\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi&quot;;&quot;C:\boost\bin.v2\libs\filesystem\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
