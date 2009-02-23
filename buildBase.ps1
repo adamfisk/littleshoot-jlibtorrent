@@ -6,6 +6,7 @@ if (!$?)
     exit 1
 }
 
+echo "Building Java header file"
 javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamboo.jni.JLibTorrent
 
 $buildArg = $args[0]
