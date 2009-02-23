@@ -1,7 +1,8 @@
-javac ./src/main/java/org/lastbamboo/jni/JLibTorrent.java
+./buildBase.ps1 /build Debug
+#javac ./src/main/java/org/lastbamboo/jni/JLibTorrent.java
 
-javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamboo.jni.JLibTorrent
+#javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamboo.jni.JLibTorrent
 
-devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj /build Debug
+#devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj /build Debug
 
-cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib/jnltorrent.dll
+#cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib/jnltorrent.dll
