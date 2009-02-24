@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="jlibtorrent"
+	Name="jnltorrent"
 	ProjectGUID="{D1B6E499-92A3-4EF0-8D4A-4958DC218C21}"
+	RootNamespace="jnltorrent"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="0"
 	>
