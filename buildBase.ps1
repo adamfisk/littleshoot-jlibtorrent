@@ -18,7 +18,7 @@ if (!$?)
     exit 1
 }
 
-cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib/jnltorrent.dll
+cp ./jlibtorrent.vcproj/$buildConfig/jlibtorrent.dll ../../lib/jnltorrent.dll
 
 if (!$?)
 {
