@@ -19,3 +19,9 @@ if (!$?)
 }
 
 cp ./jlibtorrent.vcproj/Debug/jlibtorrent.dll ../../lib/jnltorrent.dll
+
+if (!$?)
+{
+    Write-Output "Could not copy dll. Exiting" 
+    exit 1
+}
