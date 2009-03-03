@@ -1,7 +1,27 @@
-./buildBase.ps1 /build Debug
+javac ./src/main/java/org/lastbamboo/jni/JLibTorrent.java
+
+#if (!$?)
+#{
+#    Write-Output "Could not build Java file.  Exiting" 
+#    exit 1
+#}
+
+echo "Building Java header file"
+javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamboo.jni.JLibTorrent
+
+#$buildArg = $args[0]
+#$buildConfig = $args[1]
+devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj $VS_COMMAND $BUILD_CONFIG
+if (!$?)
+{
+    Write-Output "Could not build JNI project for LibTorrent. Exiting" 
+    exit 1
+}
+
+cp ./jlibtorrent.vcproj/$BUILD_CONFIG/jnltorrent.dll ../../lib/jnltorrent.dll
 
 if (!$?)
 {
-    Write-Output "Could not build Debug release.  Exiting" 
+    Write-Output "Could not copy dll. Exiting" 
     exit 1
 }
