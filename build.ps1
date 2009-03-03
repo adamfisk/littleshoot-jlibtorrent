@@ -11,14 +11,14 @@ javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamb
 
 #$buildArg = $args[0]
 #$buildConfig = $args[1]
-devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj $VS_COMMAND $BUILD_CONFIG
+devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj $LS_VS_COMMAND $LS_BUILD_CONFIG
 if (!$?)
 {
     Write-Output "Could not build JNI project for LibTorrent. Exiting" 
     exit 1
 }
 
-cp ./jlibtorrent.vcproj/$BUILD_CONFIG/jnltorrent.dll ../../lib/jnltorrent.dll
+cp ./jlibtorrent.vcproj/$LS_BUILD_CONFIG/jnltorrent.dll ../../lib/jnltorrent.dll
 
 if (!$?)
 {
