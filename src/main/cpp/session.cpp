@@ -390,7 +390,7 @@ class session : private boost::noncopyable
             return name;
         }
 	
-        const libtorrent::size_type get_size_for_torrent(const char* torrentPath) 
+        const libtorrent::unsigned_size_type get_size_for_torrent(const char * torrentPath) 
 		{
 			return info(torrentPath).total_size();
 		}
