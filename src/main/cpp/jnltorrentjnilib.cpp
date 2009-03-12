@@ -674,7 +674,7 @@ void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
     }
 }
 
-boost::uint64_t longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
+boost::int64_t longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
     if (!torrentPath)
@@ -683,7 +683,7 @@ boost::uint64_t longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const
 		return -1; // OutOfMemoryError already thrown 
 	}
     
-    boost::uint64_t toReturn = -1;
+    boost::int64_t toReturn = -1;
     
     try
     { 
