@@ -508,6 +508,8 @@ class session : private boost::noncopyable
                 }
                 
                 h.save_resume_data();
+                
+                std::cout << "torrent: \n" << h.get_torrent_info().name() << "--torrent\n" << std::endl;
             }
 #if 0
             boost::filesystem::ofstream out(
@@ -672,7 +674,7 @@ void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
     }
 }
 
-long longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
+boost::uint64_t longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
     if (!torrentPath)
@@ -681,7 +683,8 @@ long longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
 		return -1; // OutOfMemoryError already thrown 
 	}
     
-    long toReturn = -1;
+    boost::uint64_t toReturn = -1;
+    
     try
     { 
         toReturn = pt2Func(torrentPath);
