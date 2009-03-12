@@ -674,7 +674,7 @@ void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
     }
 }
 
-boost::int64_t longCall(JNIEnv * env, const jstring& arg, long (*pt2Func)(const char*))
+boost::int64_t longCall(JNIEnv * env, const jstring& arg, boost::int64_t (*pt2Func)(const char*))
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
     if (!torrentPath)
@@ -825,7 +825,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 	return 0;
 }
 
-long indexFunc(const char* torrentPath)
+boost::int64_t indexFunc(const char* torrentPath)
 {    
     return session::instance().get_index_for_torrent(torrentPath);
 }
@@ -844,7 +844,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1to
 ){return stringCall(env, arg, &nameFunc);}
 
 
-long sizeFunc(const char* torrentPath)
+boost::int64_t sizeFunc(const char* torrentPath)
 {    
     return session::instance().status(torrentPath).total_wanted;
 }
@@ -893,7 +893,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 ) {return intCall(env, arg, &numFilesFunc);}
 
 
-long bytesReadFunc(const char* torrentPath)
+boost::int64_t bytesReadFunc(const char* torrentPath)
 {    
     return session::instance().status(torrentPath).total_wanted_done; 
 }
