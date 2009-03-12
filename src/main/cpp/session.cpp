@@ -751,7 +751,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 		return NULL; /* OutOfMemoryError already thrown */
 	}
 	
-	const libtorrent::size_type size = 
+	const libtorrent::unsigned_size_type size = 
 		session::instance().get_size_for_torrent(torrentPath); 
 	
 	env->ReleaseStringUTFChars(arg, torrentPath);
