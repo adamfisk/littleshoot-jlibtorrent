@@ -242,6 +242,20 @@ class session : private boost::noncopyable
 
             return handle;
 		}
+        
+        void remove_torrent(const char * torrent_path)
+        {
+            if (torrent_path)
+            {
+                const libtorrent::torrent_handle th = session::instance(
+                    ).handle(torrent_path)
+                ;
+                
+                session::instance().get_session()->remove_torrent(th);
+                
+                m_torrent_path_to_handle.erase(torrent_path);
+            }
+        }
 	
         const libtorrent::torrent_handle handle(const char* torrentPath)
         {
@@ -853,12 +867,11 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 ) {return longCall(env, arg, &sizeFunc);}
 
 
-void removeFunc(const char* torrentPath)
+void removeFunc(const char * torrentPath)
 {    
-    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
-    if (th.is_valid())
+    if (torrentPath)
     {
-        session::instance().get_session()->remove_torrent(th);
+        session::instance().remove_torrent(torrentPath);
     }
 }    
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
