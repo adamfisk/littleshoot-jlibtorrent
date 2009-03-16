@@ -251,9 +251,12 @@ class session : private boost::noncopyable
                     ).handle(torrent_path)
                 ;
                 
-                session::instance().get_session()->remove_torrent(th);
+                if (th.is_valid())
+                {
+                    session::instance().get_session()->remove_torrent(th);
                 
-                m_torrent_path_to_handle.erase(torrent_path);
+                    m_torrent_path_to_handle.erase(torrent_path);
+                }
             }
         }
 	
