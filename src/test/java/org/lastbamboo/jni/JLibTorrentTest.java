@@ -18,6 +18,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.lastbamboo.common.util.DefaultHttpClient;
 import org.lastbamboo.common.util.DefaultHttpClientImpl;
+import org.lastbamboo.common.util.ShootUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,17 +37,18 @@ public class JLibTorrentTest
             new File (pwd.getCanonicalFile(), System.mapLibraryName("jnltorrent"));
         
         final String fullPath = fullFile.getCanonicalPath();
-        final JLibTorrent torrent = new JLibTorrent(fullPath);
+        final JLibTorrent torrent = new JLibTorrent(fullPath, ShootUtils.isPro());
         
         
         
-        final String uri = "http://www.mininova.org/get/2077943";
+        //final String uri = "http://www.mininova.org/get/2077943";
+        final String uri = "http://stealthisfilm.com/torrent/StealThisFilmII.iPod.torrent";
         final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
         torrent.download(savePath, torrentFile, false);
         
         
-        for (int i = 0; i< 2; i++)
+        for (int i = 0; i< 6; i++)
             {
             System.out.println("Calling process events");
             final int state = 

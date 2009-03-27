@@ -81,10 +81,10 @@ class session : private boost::noncopyable
 			return boost::details::pool::singleton_default<session>::instance();
         }
 
-        void start()
+        void start(bool isPro)
         {
             std::cout << "Starting session..." << std::endl;
-            
+            m_is_pro = isPro;
             const boost::uint8_t version_major = 0;
             const boost::uint8_t version_minor = 1;
             const boost::uint8_t version_micro = 1;
@@ -100,7 +100,7 @@ class session : private boost::noncopyable
 
 			libtorrent::session_settings settings;
 
-			settings.user_agent = "LittleShoot/0.84 libtorrent/"
+			settings.user_agent = "LittleShoot/0.97 libtorrent/"
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
             settings.ignore_limits_on_local_network = true;
@@ -218,7 +218,16 @@ class session : private boost::noncopyable
             // Sequential mode for single file torrents.
             
             handle.set_sequential_download(sequential);
-            handle.set_max_connections(50);
+            if (m_is_pro)
+            {
+                cout << "Setting max connections to 50 for pro" << endl;
+                handle.set_max_connections(50);
+            }
+            else
+            {
+                cout << "Setting max connections for free" << endl;
+                handle.set_max_connections(40);
+            }
             //handle.set_max_uploads(-1);
             handle.set_upload_limit(1024 * 32);
             handle.set_download_limit(-1);
@@ -645,6 +654,7 @@ class session : private boost::noncopyable
     private:
     
         boost::shared_ptr<libtorrent::session> m_session;
+        bool m_is_pro;
 		InfoHashToIndexMap m_piece_to_index_map;
 		TorrentPathToDownloadHandle m_torrent_path_to_handle;
 		
@@ -794,10 +804,11 @@ jstring const stringCall(JNIEnv * env, const jstring& arg, string const (*pt2Fun
 
 // Java function to C interfaces.
 
-JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(JNIEnv * env , jobject obj)
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(
+    JNIEnv * env , jobject obj, jboolean isPro)
 {
     std::cout << "jnltorrent start" << std::endl;
-    session::instance().start();
+    session::instance().start(isPro);
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_stop(JNIEnv * env , jobject obj)

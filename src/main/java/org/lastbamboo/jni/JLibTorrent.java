@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+
 /**
  * Java wrapper class for calls to native lib torrent.
  */
@@ -19,9 +20,11 @@ public class JLibTorrent
     private float m_payloadUploadRate;
     private float m_payloadDownloadRate;
     private int m_numPeers;
+    private final boolean m_isPro;
 
-    public JLibTorrent(final Collection<File> libFiles)
+    public JLibTorrent(final Collection<File> libFiles, final boolean isPro)
         {
+        this.m_isPro = isPro;
         boolean libLoaded = false;
         for (final File lib : libFiles)
             {
@@ -40,14 +43,16 @@ public class JLibTorrent
         init();
         }
     
-    public JLibTorrent()
+    public JLibTorrent(final boolean isPro)
         {
+        this.m_isPro = isPro;
         System.loadLibrary("jnltorrent");
         init();
         }
     
-    public JLibTorrent(final String libraryPath)
+    public JLibTorrent(final String libraryPath, final boolean isPro)
         {
+        this.m_isPro = isPro;
         System.load(libraryPath);
         init();
         }
@@ -55,7 +60,7 @@ public class JLibTorrent
     private void init()
         {
         cacheMethodIds();
-        start();
+        start(this.m_isPro);
         }
     
     public void updateSessionStatus() 
@@ -81,11 +86,6 @@ public class JLibTorrent
         {
         final String path = normalizePath(torrentFile);
         return get_max_byte_for_torrent(path);
-        }
-    
-    public void startSession()
-        {
-        start();
         }
     
     public void stopSession()
@@ -197,7 +197,7 @@ public class JLibTorrent
     /**
      * Initialize the libtorrent core.
      */
-    private native void start();
+    private native void start(final boolean isPro);
     
     /**
      * Shuts down the libtorrent core.
