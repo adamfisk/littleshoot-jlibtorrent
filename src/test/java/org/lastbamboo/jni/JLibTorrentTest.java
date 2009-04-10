@@ -45,7 +45,7 @@ public class JLibTorrentTest
         final String uri = "http://stealthisfilm.com/torrent/StealThisFilmII.iPod.torrent";
         final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
-        torrent.download(savePath, torrentFile, false);
+        torrent.download(savePath, torrentFile, false, -1);
         
         
         for (int i = 0; i< 6; i++)

@@ -69,11 +69,11 @@ public class JLibTorrent
         }
     
     public void download(final File incompleteDir, final File torrentFile, 
-        final boolean sequential) throws IOException 
+        final boolean sequential, final int torrentState) throws IOException 
         {
         final long handle = add_torrent(incompleteDir.getCanonicalPath(), 
             torrentFile.getCanonicalPath(), (int) torrentFile.length(), 
-            sequential);
+            sequential, torrentState);
         }
     
     public String moveToDownloadsDir(final File torrentFile)
@@ -88,11 +88,6 @@ public class JLibTorrent
         return get_max_byte_for_torrent(path);
         }
     
-    public void stopSession()
-        {
-        stop();
-        }
-    
     public void pauseTorrent(final File torrentFile)
         {
         final String path = normalizePath(torrentFile);
@@ -101,6 +96,7 @@ public class JLibTorrent
     
     public void resumeTorrent(final File torrentFile)
         {
+        System.out.println("JLibTorrent::Resuming torrent from java...");
         final String path = normalizePath(torrentFile);
         resume_torrent(path);
         }
@@ -205,9 +201,7 @@ public class JLibTorrent
     public native void stop();
     
     private native long add_torrent(String incompletePath, String torrentPath, 
-        int size, boolean sequential);
-    
-    
+        int size, boolean sequential, int torrentState);
 
     private void setTotalUploadBytes(final long totalUploadBytes)
         {
