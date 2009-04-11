@@ -96,9 +96,15 @@ public class JLibTorrent
     
     public void resumeTorrent(final File torrentFile)
         {
-        System.out.println("JLibTorrent::Resuming torrent from java...");
         final String path = normalizePath(torrentFile);
         resume_torrent(path);
+        }
+
+    public void hardResumeTorrent(final File torrentFile)
+        {
+        System.out.println("Performing hard resume");
+        final String path = normalizePath(torrentFile);
+        hard_resume_torrent(path);
         }
     
     public long getSizeForTorrent(final File torrentFile)
@@ -201,6 +207,8 @@ public class JLibTorrent
     private native void pause_torrent(final String path);
     
     private native void resume_torrent(final String path);
+    
+    private native void hard_resume_torrent(final String path);
     
     private native long get_max_byte_for_torrent(final String path);
     

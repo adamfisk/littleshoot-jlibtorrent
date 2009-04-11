@@ -1110,7 +1110,6 @@ void resume(const char* torrentPath)
     if (th.is_valid())
     {
         th.auto_managed(true);
-        th.resume();
         cout << "Resumed...set auto_managed to true" << endl;
     }
     //session::instance().save_torrents();
@@ -1118,6 +1117,22 @@ void resume(const char* torrentPath)
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 ){return voidCall(env, arg, &resume);}
+
+void hard_resume(const char* torrentPath)
+{
+    const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
+    if (th.is_valid())
+    {
+        th.auto_managed(true);
+        th.resume();
+        cout << "Hard resumed...set auto_managed to true" << endl;
+    }
+    //session::instance().save_torrents();
+}
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_hard_1resume_1torrent(
+    JNIEnv * env, jobject obj, jstring arg
+) {return voidCall(env, arg, &hard_resume);}
+
 
 
 void set_seeding(bool seeding)
