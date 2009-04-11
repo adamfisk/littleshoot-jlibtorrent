@@ -150,6 +150,20 @@ public class JLibTorrent
         return get_bytes_read_for_torrent(path);
         }
     
+    public void setSeeding(final boolean seeding)
+        {
+        set_seeding(seeding);
+        }
+    
+    public void setMaxUploadSpeed(final int bytesPerSecond)
+        {
+        set_max_upload_speed(bytesPerSecond);
+        }
+    
+    private native void set_seeding(final boolean seeding);
+    
+    private native void set_max_upload_speed(final int bytesPerSecond);
+    
     private final String normalizePath(final File torrentFile)
         {
         try
@@ -293,5 +307,4 @@ public class JLibTorrent
         return m_totalPayloadDownloadBytes;
         }
 
-    
     }

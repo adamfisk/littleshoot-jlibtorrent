@@ -128,8 +128,10 @@ class session : private boost::noncopyable
             m_session->set_download_rate_limit(-1);
             
             // Common 768k dsl - factor (8 active s, 5 active s).
-            m_session->set_upload_rate_limit(1024 * 96);
+            m_session->set_upload_rate_limit(1024 * 100);
             m_session->set_settings(settings);
+            
+            m_upload_rate_limit = 1024 * 100;
             
 #if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
             //session::instance().tick();
@@ -283,6 +285,29 @@ class session : private boost::noncopyable
 
             return handle;
 		}
+    
+        void set_max_upload_speed(int speed)
+        {
+            cout << "Setting max upload speed to: " << speed << endl;
+            
+            // Interpret all negative speeds as unlimited.
+            if (speed < 0)
+            {
+                speed = -1;
+            }
+            m_session->set_upload_rate_limit(speed);
+            m_upload_rate_limit = speed;
+        }
+    
+        void set_upload_rate_limit_raw(int speed)
+        {
+            m_session->set_upload_rate_limit(speed);
+        }
+    
+        int get_last_upload_rate_limit()
+        {
+            return m_upload_rate_limit;
+        }
         
         void remove_torrent(const char * torrent_path)
         {
@@ -731,6 +756,7 @@ class session : private boost::noncopyable
 		InfoHashToIndexMap m_piece_to_index_map;
 		TorrentPathToDownloadHandle m_torrent_path_to_handle;
         static const int PausedState = 200;
+        int m_upload_rate_limit;
 		
     protected:
     
@@ -766,6 +792,34 @@ void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
     try
     { 
         pt2Func(torrentPath);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+}
+
+void voidCall(JNIEnv * env, const jboolean& arg, void (*pt2Func)(bool))
+{
+    try
+    { 
+        pt2Func(arg);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+}
+
+void voidCall(JNIEnv * env, const jint& arg, void (*pt2Func)(int))
+{
+    try
+    { 
+        pt2Func(arg);
     }
     catch (exception & e)
     {
@@ -1064,6 +1118,34 @@ void resume(const char* torrentPath)
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 ){return voidCall(env, arg, &resume);}
+
+
+void set_seeding(bool seeding)
+{
+    if (seeding)
+    {
+        int lastSpeed = session::instance().get_last_upload_rate_limit();
+        session::instance().set_max_upload_speed(lastSpeed);
+    }
+    else
+    {
+        // We just set it directly here to avoid storing the no seeding speed.
+        session::instance().set_upload_rate_limit_raw(0);
+    }
+}
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_set_1seeding(
+    JNIEnv * env, jobject obj, jboolean arg
+){return voidCall(env, arg, &set_seeding);}
+
+
+void set_max_upload_speed(int speed)
+{
+    session::instance().set_max_upload_speed(speed);    
+}
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_set_1max_1upload_1speed(
+    JNIEnv * env, jobject obj, jint arg
+){return voidCall(env, arg, &set_max_upload_speed);}
 
 
 void checkMethodId(const jmethodID field)
