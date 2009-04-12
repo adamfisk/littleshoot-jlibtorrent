@@ -251,8 +251,8 @@ class session : private boost::noncopyable
             if (torrent_state == PausedState)
             {
                 cout << "Setting auto_managed to false (paused)" << endl;
-                handle.auto_managed(false);
-                handle.pause();
+                //handle.auto_managed(false);
+                //handle.pause();
             }
 
             if (!is_resume)
@@ -270,8 +270,8 @@ class session : private boost::noncopyable
                     cout << "Setting max connections for free" << endl;
                     handle.set_max_connections(40);
                 }
-                //handle.set_max_uploads(-1);
-                handle.set_upload_limit(1024 * 32);
+                handle.set_max_uploads(-1);
+                //handle.set_upload_limit(1024 * 32);
                 handle.set_download_limit(-1);
             }
             
@@ -296,17 +296,6 @@ class session : private boost::noncopyable
                 speed = -1;
             }
             m_session->set_upload_rate_limit(speed);
-            m_upload_rate_limit = speed;
-        }
-    
-        void set_upload_rate_limit_raw(int speed)
-        {
-            m_session->set_upload_rate_limit(speed);
-        }
-    
-        int get_last_upload_rate_limit()
-        {
-            return m_upload_rate_limit;
         }
         
         void remove_torrent(const char * torrent_path)
@@ -522,9 +511,9 @@ class session : private boost::noncopyable
             const boost::filesystem::path savePath = th.save_path();
             cout << "Save path is: " << savePath.string() << endl;
             const boost::filesystem::path tempDir = savePath.parent_path();
-            const boost::filesystem::path incompleteDir = tempDir.parent_path();
+            const boost::filesystem::path sharedDir = tempDir.parent_path();
             //const boost::filesystem::path sharedDir = incompleteDir.parent_path();
-            const boost::filesystem::path downloadsDir(incompleteDir / "downloads");
+            const boost::filesystem::path downloadsDir(sharedDir / "downloads");
             th.move_storage(downloadsDir);
             return downloadsDir;
         }
@@ -855,6 +844,22 @@ boost::int64_t longCall(JNIEnv * env, const jstring& arg, boost::int64_t (*pt2Fu
     return toReturn;
 }
 
+int intCall(JNIEnv * env, int (*pt2Func)())
+{
+    int toReturn = -1;
+    try
+    { 
+        toReturn = pt2Func();
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    return toReturn;
+}
+
 int intCall(JNIEnv * env, const jstring& arg, int (*pt2Func)(const char*))
 {
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
@@ -1127,31 +1132,11 @@ void hard_resume(const char* torrentPath)
         th.resume();
         cout << "Hard resumed...set auto_managed to true" << endl;
     }
-    //session::instance().save_torrents();
 }
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_hard_1resume_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 ) {return voidCall(env, arg, &hard_resume);}
-
-
-
-void set_seeding(bool seeding)
-{
-    if (seeding)
-    {
-        int lastSpeed = session::instance().get_last_upload_rate_limit();
-        session::instance().set_max_upload_speed(lastSpeed);
-    }
-    else
-    {
-        // We just set it directly here to avoid storing the no seeding speed.
-        session::instance().set_upload_rate_limit_raw(0);
-    }
-}
-JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_set_1seeding(
-    JNIEnv * env, jobject obj, jboolean arg
-){return voidCall(env, arg, &set_seeding);}
-
+            
 
 void set_max_upload_speed(int speed)
 {

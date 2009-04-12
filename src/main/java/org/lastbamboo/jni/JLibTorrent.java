@@ -100,6 +100,16 @@ public class JLibTorrent
         resume_torrent(path);
         }
 
+    /**
+     * Performs a "hard" resume of a torrent.  This is necessary when starting
+     * torrents from previous sessions that were paused in the previous 
+     * session.  The usual resume scenario doesn't appear to work in this 
+     * case because simply setting a torrent to auto_managed that was never
+     * started out of the pause state in the first place appears to have no 
+     * effect.
+     * 
+     * @param torrentFile The torrent file.
+     */
     public void hardResumeTorrent(final File torrentFile)
         {
         System.out.println("Performing hard resume");
@@ -156,17 +166,10 @@ public class JLibTorrent
         return get_bytes_read_for_torrent(path);
         }
     
-    public void setSeeding(final boolean seeding)
-        {
-        set_seeding(seeding);
-        }
-    
     public void setMaxUploadSpeed(final int bytesPerSecond)
         {
         set_max_upload_speed(bytesPerSecond);
         }
-    
-    private native void set_seeding(final boolean seeding);
     
     private native void set_max_upload_speed(final int bytesPerSecond);
     
