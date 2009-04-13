@@ -239,9 +239,10 @@ class session : private boost::noncopyable
                     libtorrent::storage_mode_sparse
                     ;
                 
-                // Torrents that are auto-managed should be added in the 
-                // paused state.
-                p.paused = true;
+                // The LibTorrent docs say torrents should be added in the
+                // paused state, but we've seen them just stay paused 
+                // forever in that case.
+                p.paused = false;
                 p.duplicate_is_error = false;
             }
             
