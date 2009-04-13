@@ -199,7 +199,7 @@ class session : private boost::noncopyable
                 return libtorrent::torrent_handle();
             }
             
-            std::cout << "Using incomplete dir" << incompleteDir << endl;
+            log_debug("Using incomplete dir" << incompleteDir);
 			libtorrent::add_torrent_params p;
             
             boost::filesystem::path system_incomplete_path(incompleteDir);
@@ -211,6 +211,7 @@ class session : private boost::noncopyable
             }
             else
             {
+                /*
                 cout << "Found incomplete path" << endl;
                 //std::string filename = (system_incomplete_path / ("resume.fastresume")).string();
                 const boost::filesystem::path resume_file_path(system_incomplete_path / "resume.fastresume");
@@ -223,6 +224,7 @@ class session : private boost::noncopyable
                     //p.resume_data = &resume_buf;
                     //is_resume = true;
                 }
+                 */
             }
             p.ti = new libtorrent::torrent_info(e);
             p.save_path = incompleteDir;
@@ -245,15 +247,7 @@ class session : private boost::noncopyable
             
             //cout << "About to add torrent..." << endl;
             libtorrent::torrent_handle handle = m_session->add_torrent(p);
-            //cout << "Added torrent...paused: " << handle.is_paused() << endl;
-            
-            cout << "Checking state...torrent_state is: " << torrent_state << endl;
-            if (torrent_state == PausedState)
-            {
-                cout << "Setting auto_managed to false (paused)" << endl;
-                //handle.auto_managed(false);
-                //handle.pause();
-            }
+            log_debug("Added torrent...");
 
             if (!is_resume)
             {
@@ -262,33 +256,33 @@ class session : private boost::noncopyable
                 handle.set_sequential_download(sequential);
                 if (m_is_pro)
                 {
-                    cout << "Setting max connections to 50 for pro" << endl;
-                    handle.set_max_connections(50);
+                    log_debug("Setting max connections to 60 for pro");
+                    handle.set_max_connections(60);
                 }
                 else
                 {
-                    cout << "Setting max connections for free" << endl;
-                    handle.set_max_connections(40);
+                    log_debug("Setting max connections for free");
+                    handle.set_max_connections(50);
                 }
                 handle.set_max_uploads(-1);
                 //handle.set_upload_limit(1024 * 32);
                 handle.set_download_limit(-1);
             }
             
-            cout << "Adding torrent path to map: " << torrentPath << endl;
+            log_debug("Adding torrent path to map: " << torrentPath);
             
             const string stringPath = torrentPath;
             m_torrent_path_to_handle.insert(
                 TorrentPathToDownloadHandle::value_type(stringPath, handle));
             
-            cout << "Torrent name: " << handle.name() << endl;
+            log_debug("Torrent name: " << handle.name());
 
             return handle;
 		}
     
         void set_max_upload_speed(int speed)
         {
-            cout << "Setting max upload speed to: " << speed << endl;
+            log_debug("Setting max upload speed to: " << speed);
             
             // Interpret all negative speeds as unlimited.
             if (speed < 0)
@@ -410,8 +404,8 @@ class session : private boost::noncopyable
                     m_piece_to_index_map[sha1] = j;
                     
                     log_debug("index: " << j);
-                    log_debug("piece length is: " << ti.piece_length());
-                    log_debug("num pieces is: " << ti.num_pieces());
+                    //log_debug("piece length is: " << ti.piece_length());
+                    //log_debug("num pieces is: " << ti.num_pieces());
                     
                     const unsigned long maxByte = j * ti.piece_length();
                     
@@ -450,7 +444,7 @@ class session : private boost::noncopyable
             const torrent_handle th = handle(torrentPath);
             if (!th.is_valid() || !th.has_metadata())
             {
-                cerr << "Invalid torrent" << endl;
+                log_debug("Invalid torrent");
                 return "";
             }
             const torrent_info ti = th.get_torrent_info();
@@ -505,7 +499,7 @@ class session : private boost::noncopyable
             
             if (!th.is_valid())
             {
-                cerr << "Invalid torrent!!" << endl;
+                log_debug("Invalid torrent");
                 return boost::filesystem::path(".");
             }
             const boost::filesystem::path savePath = th.save_path();
