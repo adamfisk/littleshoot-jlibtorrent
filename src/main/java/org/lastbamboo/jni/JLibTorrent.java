@@ -76,10 +76,12 @@ public class JLibTorrent
             sequential, torrentState);
         }
     
-    public String moveToDownloadsDir(final File torrentFile)
+    public void moveToDownloadsDir(final File torrentFile, 
+        final File downloadsDir)
         {
         final String path = normalizePath(torrentFile);
-        return move_to_downloads_dir(path);
+        final String downloadsDirPath = normalizePath(downloadsDir);
+        move_to_downloads_dir(path, downloadsDirPath);
         }
 
     public long getMaxByteForTorrent(final File torrentFile)
@@ -189,7 +191,8 @@ public class JLibTorrent
     
     private native void update_session_status();
     
-    private native String move_to_downloads_dir(final String path);
+    private native void move_to_downloads_dir(final String path, 
+        final String downloadsDir);
     
     private native long get_bytes_read_for_torrent(final String path);
     

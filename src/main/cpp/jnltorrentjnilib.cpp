@@ -493,23 +493,36 @@ class session : private boost::noncopyable
             }
         }
     
-        const boost::filesystem::path move_to_downloads_dir(const char* torrentPath)
+        void move_to_downloads_dir(
+            const char* torrentPath, const char* downloadsDirString)
         {
             const libtorrent::torrent_handle th = handle(torrentPath);
+            cout << "Moving to: " << downloadsDirString << endl;
             
             if (!th.is_valid())
             {
                 log_debug("Invalid torrent");
-                return boost::filesystem::path(".");
+                return;// boost::filesystem::path(".");
             }
             const boost::filesystem::path savePath = th.save_path();
             cout << "Save path is: " << savePath.string() << endl;
             const boost::filesystem::path tempDir = savePath.parent_path();
             const boost::filesystem::path sharedDir = tempDir.parent_path();
             //const boost::filesystem::path sharedDir = incompleteDir.parent_path();
-            const boost::filesystem::path downloadsDir(sharedDir / "downloads");
+            //const boost::filesystem::path downloadsDir(sharedDir / "downloads");
+            boost::filesystem::path downloadsDir = 
+                boost::filesystem::system_complete(
+                    boost::filesystem::path(downloadsDirString, boost::filesystem::native));
+            
+            if (!boost::filesystem::exists(downloadsDir))
+            {
+                cerr << "Downloads dir does not exist at: " << downloadsDir << endl;
+                return;
+                //boost::filesystem::create_directory(full_path);
+            }
+            //const boost::filesystem::path downloadsDir(downloadsDirString);
             th.move_storage(downloadsDir);
-            return downloadsDir;
+            //return downloadsDir;
         }
             
         const libtorrent::torrent_status status(const char* torrentPath) 
@@ -782,6 +795,38 @@ void voidCall(JNIEnv * env, const jstring& arg, void (*pt2Func)(const char*))
         cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
 #endif
     }
+    env->ReleaseStringUTFChars(arg, torrentPath);
+}
+
+void voidCall(JNIEnv * env, const jstring& arg1, const jstring& arg2, void (*pt2Func)(const char*, const char*))
+{
+    const char * torrentPath  = env->GetStringUTFChars(arg1, JNI_FALSE);
+    const char * str2  = env->GetStringUTFChars(arg2, JNI_FALSE);
+    if (!torrentPath)
+    {
+		cerr << "Out of memory!!" << endl;
+		return; // OutOfMemoryError already thrown 
+	}
+    
+    if (!str2)
+    {
+		cerr << "Out of memory!!" << endl;
+		return;
+	}
+    
+    try
+    { 
+        pt2Func(torrentPath, str2);
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+    
+    env->ReleaseStringUTFChars(arg1, torrentPath);
+    env->ReleaseStringUTFChars(arg2, str2);
 }
 
 void voidCall(JNIEnv * env, const jboolean& arg, void (*pt2Func)(bool))
@@ -1075,16 +1120,15 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
 ) {return floatCall(env, arg, &speedFunc);}
 
 
-string const moveToDownloadsDirFunc(const char* torrentPath)
+void moveToDownloadsDirFunc(const char* torrentPath, const char* downloadsDir)
 {
-    const boost::filesystem::path newPath = 
-        session::instance().move_to_downloads_dir(torrentPath);
+    session::instance().move_to_downloads_dir(torrentPath, downloadsDir);
     //session::instance().save_torrents();
-    return newPath.string();
+    //return newPath.string();
 }
-JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
-    JNIEnv * env, jobject obj, jstring arg
-){return stringCall(env, arg, &moveToDownloadsDirFunc);}
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
+    JNIEnv * env, jobject obj, jstring arg, jstring downloadsDirString
+){return voidCall(env, arg, downloadsDirString, &moveToDownloadsDirFunc);}
     
 
 void pause(const char* torrentPath)
