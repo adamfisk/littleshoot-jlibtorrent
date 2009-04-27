@@ -132,6 +132,12 @@ public class JLibTorrent
         remove_torrent(path);
         }
     
+    public void removeTorrentAndFiles(final File torrentFile)
+        {
+        final String path = normalizePath(torrentFile);
+        remove_torrent_and_files(path);
+        }
+    
     public int getStateForTorrent(final File torrentFile)
         {
         final String path = normalizePath(torrentFile);
@@ -209,6 +215,8 @@ public class JLibTorrent
     private native String get_name_for_torrent(final String path);
     
     private native void remove_torrent(final String path);
+    
+    private native void remove_torrent_and_files(final String path);
     
     private native void pause_torrent(final String path);
     
