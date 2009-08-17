@@ -518,10 +518,10 @@ class session : private boost::noncopyable
                 log_debug("Invalid torrent");
                 return;// boost::filesystem::path(".");
             }
-            const boost::filesystem::path savePath = th.save_path();
-            cout << "Save path is: " << savePath.string() << endl;
-            const boost::filesystem::path tempDir = savePath.parent_path();
-            const boost::filesystem::path sharedDir = tempDir.parent_path();
+            //const boost::filesystem::path savePath = th.save_path();
+            //cout << "Save path is: " << savePath.string() << endl;
+            //const boost::filesystem::path tempDir = savePath.parent_path();
+            //const boost::filesystem::path sharedDir = tempDir.parent_path();
             //const boost::filesystem::path sharedDir = incompleteDir.parent_path();
             //const boost::filesystem::path downloadsDir(sharedDir / "downloads");
             boost::filesystem::path downloadsDir = 
@@ -537,6 +537,20 @@ class session : private boost::noncopyable
             //const boost::filesystem::path downloadsDir(downloadsDirString);
             th.move_storage(downloadsDir);
             //return downloadsDir;
+        }
+    
+    
+        void rename(const char* torrentPath, const char* newName)
+        {
+            const libtorrent::torrent_handle th = handle(torrentPath);
+            cout << "Renaming to: " << newName << endl;
+            
+            if (!th.is_valid())
+            {
+                log_debug("Invalid torrent");
+                return;
+            }
+            th.rename_file(0, newName);
         }
             
         const libtorrent::torrent_status status(const char* torrentPath) 
@@ -1153,6 +1167,15 @@ void moveToDownloadsDirFunc(const char* torrentPath, const char* downloadsDir)
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
     JNIEnv * env, jobject obj, jstring arg, jstring downloadsDirString
 ){return voidCall(env, arg, downloadsDirString, &moveToDownloadsDirFunc);}
+
+void renameFunc(const char* torrentPath, const char* newName)
+{
+    session::instance().rename(torrentPath, newName);
+}
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_rename(
+    JNIEnv * env, jobject obj, jstring torrentPath, jstring newName)
+{return voidCall(env, torrentPath, newName, &renameFunc);}
+
     
 
 void pause(const char* torrentPath)

@@ -76,6 +76,13 @@ public class JLibTorrent
             sequential, torrentState);
         }
     
+
+    public void rename(final File torrentFile, final String newName)
+        {
+        final String path = normalizePath(torrentFile);
+        rename(path, newName);
+        }
+    
     public void moveToDownloadsDir(final File torrentFile, 
         final File downloadsDir)
         {
@@ -199,6 +206,8 @@ public class JLibTorrent
     
     private native void move_to_downloads_dir(final String path, 
         final String downloadsDir);
+    
+    private native void rename(final String path, final String newName);
     
     private native long get_bytes_read_for_torrent(final String path);
     
