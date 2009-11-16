@@ -1,10 +1,10 @@
 javac ./src/main/java/org/lastbamboo/jni/JLibTorrent.java
 
-#if (!$?)
-#{
-#    Write-Output "Could not build Java file.  Exiting" 
-#    exit 1
-#}
+if (!$?)
+{
+    Write-Output "Could not build Java file. Is javac on your path? Exiting." 
+    exit 1
+}
 
 echo "Building Java header file"
 javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamboo.jni.JLibTorrent
@@ -13,7 +13,9 @@ javah -verbose -classpath ./src/main/java/ -force -d build/headers/ org.lastbamb
 #$buildConfig = $args[1]
 $LS_BUILD_CONFIG=[Environment]::GetEnvironmentVariable("LS_BUILD_CONFIG", "User")
 $LS_VS_COMMAND=[Environment]::GetEnvironmentVariable("LS_VS_COMMAND", "User")
-devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj $LS_VS_COMMAND $LS_BUILD_CONFIG
+
+#devenv jlibtorrent.vcproj/jlibtorrent.sln jlibtorrent.vcproj/jlibtorrent.vcproj $LS_VS_COMMAND $LS_BUILD_CONFIG
+devenv jlibtorrent.vcproj/jlibtorrent.sln $LS_VS_COMMAND $LS_BUILD_CONFIG
 if (!$?)
 {
     Write-Output "Could not build JNI project for LibTorrent. Exiting" 
