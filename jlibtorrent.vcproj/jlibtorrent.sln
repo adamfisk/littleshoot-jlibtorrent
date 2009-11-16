@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jlibtorrent", "jlibtorrent.vcproj", "{D1B6E499-92A3-4EF0-8D4A-4958DC218C21}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jnltorrent", "jlibtorrent.vcxproj", "{D1B6E499-92A3-4EF0-8D4A-4958DC218C21}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
