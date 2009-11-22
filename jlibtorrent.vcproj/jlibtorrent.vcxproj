@@ -79,7 +79,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>libtorrent.lib;libboost_system-mt-s.lib;libboost_thread-mt-s.lib;libboost_filesystem-mt-s.lib;libeay32MT.lib;ssleay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\OpenSSL\lib\VC\static;../../../libtorrent\libtorrent\bin\msvc-9.0\release\boost-source\dht-support-off\link-static\runtime-link-static\threading-multi;C:\boost\bin.v2\libs\thread\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi;C:\boost\bin.v2\libs\system\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi;C:\boost\bin.v2\libs\filesystem\build\msvc-9.0\release\link-static\runtime-link-static\threading-multi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\..\..\..\OpenSSL\lib\VC\static;..\..\..\libtorrent\libtorrent\bin\msvc-10.0\release\boost-source\dht-support-off\link-static\runtime-link-static\threading-multi;..\..\..\..\..\..\..\..\boost\bin.v2\libs\thread\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi;..\..\..\..\..\..\..\..\boost\bin.v2\libs\system\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi;..\..\..\..\..\..\..\..\boost\bin.v2\libs\filesystem\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
