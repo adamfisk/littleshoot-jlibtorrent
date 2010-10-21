@@ -18,7 +18,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.lastbamboo.common.util.DefaultHttpClient;
 import org.lastbamboo.common.util.DefaultHttpClientImpl;
-import org.lastbamboo.common.util.ShootUtils;
+import org.lastbamboo.common.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +37,9 @@ public class JLibTorrentTest
             new File (pwd.getCanonicalFile(), System.mapLibraryName("jnltorrent"));
         
         final String fullPath = fullFile.getCanonicalPath();
-        final JLibTorrent torrent = new JLibTorrent(fullPath, ShootUtils.isPro());
+        final JLibTorrent torrent = 
+            new JLibTorrent(fullPath, CommonUtils.isPro());
         
-        
-        
-        //final String uri = "http://www.mininova.org/get/2077943";
         final String uri = "http://stealthisfilm.com/torrent/StealThisFilmII.iPod.torrent";
         final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
