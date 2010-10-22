@@ -1,0 +1,9 @@
+Old Visual Studio "Additional Dependencies" under Project->Properties->Linker->Input:
+
+libtorrent.lib
+libboost_system-mt-sgd.lib
+libboost_thread-mt-sgd.lib
+libboost_filesystem-mt-sgd.lib
+libeay32MTd.lib
+ssleay32MTd.lib
+
