@@ -1,3 +1,7 @@
+Notes on the upgrade to LT 0.15.4 and Boost 1.44:
+
+The biggest issue was that we needed to build a new x86 binary for both 32 bit and 64 bit. This generally went fine except for the fact that we previously weren't specifying the "architecture" argument when building Boost, and for some reason this caused the i386 build to fail during the linking stage because the Boost build wasn't exporting the correct symbols. Adding the architectue=x86 (I think it was) argument solved the issue after much searching!
+
 Old Visual Studio "Additional Dependencies" under Project->Properties->Linker->Input:
 
 libtorrent.lib
