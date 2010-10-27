@@ -84,7 +84,7 @@ class session : private boost::noncopyable
 
         void start(bool isPro)
         {
-            std::cout << "Starting session..." << std::endl;
+            std::cout << "Starting LittleShoot 1.0 session..." << std::endl;
             m_is_pro = isPro;
             const boost::uint8_t version_major = 0;
             const boost::uint8_t version_minor = 1;
@@ -101,7 +101,7 @@ class session : private boost::noncopyable
 
 			libtorrent::session_settings settings;
 
-			settings.user_agent = "LittleShoot/0.97 libtorrent/"
+			settings.user_agent = "LittleShoot/1.0 LibTorrent/"
                 LIBTORRENT_VERSION;
 			settings.stop_tracker_timeout = 5;
             settings.ignore_limits_on_local_network = true;
