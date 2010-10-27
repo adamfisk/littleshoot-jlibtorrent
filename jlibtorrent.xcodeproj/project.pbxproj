@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		29ABB7501277A3990019A251 /* libtorrent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29ABB74F1277A3990019A251 /* libtorrent.a */; };
 		B9B2B1550F6CDCC600459FB9 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9B2B1530F6CDCC600459FB9 /* libcrypto.a */; };
 		B9B2B1560F6CDCC600459FB9 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9B2B1540F6CDCC600459FB9 /* libssl.a */; };
 		F2418CEA0EF2F4D80028E7A0 /* jnltorrentjnilib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */; };
@@ -20,7 +19,6 @@
 		0AB364E40B2F671600788B6C /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
 		0AB3653A0B2F688E00788B6C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		0AB3653C0B2F68A200788B6C /* dist */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dist; sourceTree = "<group>"; };
-		29ABB74F1277A3990019A251 /* libtorrent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtorrent.a; path = ../../libtorrent/mac/build/Release/libtorrent.a; sourceTree = SOURCE_ROOT; };
 		B950091D0F23B47100F0509D /* session.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = session.cpp; path = src/main/cpp/session.cpp; sourceTree = "<group>"; };
 		B9B2B1530F6CDCC600459FB9 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "../../openssl/openssl-0.9.8j/build/libcrypto.a"; sourceTree = SOURCE_ROOT; };
 		B9B2B1540F6CDCC600459FB9 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "../../openssl/openssl-0.9.8j/build/libssl.a"; sourceTree = SOURCE_ROOT; };
@@ -35,7 +33,6 @@
 			files = (
 				B9B2B1550F6CDCC600459FB9 /* libcrypto.a in Frameworks */,
 				B9B2B1560F6CDCC600459FB9 /* libssl.a in Frameworks */,
-				29ABB7501277A3990019A251 /* libtorrent.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,7 +42,6 @@
 		00E6828FFEC88D1A11DB9C8B = {
 			isa = PBXGroup;
 			children = (
-				29ABB74F1277A3990019A251 /* libtorrent.a */,
 				B9B2B1530F6CDCC600459FB9 /* libcrypto.a */,
 				B9B2B1540F6CDCC600459FB9 /* libssl.a */,
 				B950091D0F23B47100F0509D /* session.cpp */,
