@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29ABB7501277A3990019A251 /* libtorrent.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 29ABB74F1277A3990019A251 /* libtorrent.a */; };
 		B9B2B1550F6CDCC600459FB9 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9B2B1530F6CDCC600459FB9 /* libcrypto.a */; };
 		B9B2B1560F6CDCC600459FB9 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9B2B1540F6CDCC600459FB9 /* libssl.a */; };
 		F2418CEA0EF2F4D80028E7A0 /* jnltorrentjnilib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F2418CE90EF2F4D80028E7A0 /* jnltorrentjnilib.cpp */; };
@@ -19,6 +20,7 @@
 		0AB364E40B2F671600788B6C /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
 		0AB3653A0B2F688E00788B6C /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		0AB3653C0B2F68A200788B6C /* dist */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dist; sourceTree = "<group>"; };
+		29ABB74F1277A3990019A251 /* libtorrent.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtorrent.a; path = ../../libtorrent/mac/build/Release/libtorrent.a; sourceTree = SOURCE_ROOT; };
 		B950091D0F23B47100F0509D /* session.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = session.cpp; path = src/main/cpp/session.cpp; sourceTree = "<group>"; };
 		B9B2B1530F6CDCC600459FB9 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "../../openssl/openssl-0.9.8j/build/libcrypto.a"; sourceTree = SOURCE_ROOT; };
 		B9B2B1540F6CDCC600459FB9 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "../../openssl/openssl-0.9.8j/build/libssl.a"; sourceTree = SOURCE_ROOT; };
@@ -33,6 +35,7 @@
 			files = (
 				B9B2B1550F6CDCC600459FB9 /* libcrypto.a in Frameworks */,
 				B9B2B1560F6CDCC600459FB9 /* libssl.a in Frameworks */,
+				29ABB7501277A3990019A251 /* libtorrent.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +45,7 @@
 		00E6828FFEC88D1A11DB9C8B = {
 			isa = PBXGroup;
 			children = (
+				29ABB74F1277A3990019A251 /* libtorrent.a */,
 				B9B2B1530F6CDCC600459FB9 /* libcrypto.a */,
 				B9B2B1540F6CDCC600459FB9 /* libssl.a */,
 				B950091D0F23B47100F0509D /* session.cpp */,
@@ -157,14 +161,15 @@
 		4CEBA79208679F100015D03E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_EXTENSION = jnilib;
 				EXECUTABLE_PREFIX = lib;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
+				GCC_MODEL_TUNING = "";
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"/System/Library/Frameworks/JavaVM.framework/Headers/**",
@@ -178,13 +183,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/debug\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/debug/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j\"",
-					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j/build/darwin64-x86_64\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.2.1/debug/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.2.1/debug/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.2.1/debug/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.2.1/debug/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.2.1/debug/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
 					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j/build\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
@@ -201,7 +204,9 @@
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = antbasedjni;
+				SDKROOT = macosx10.5;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -214,27 +219,26 @@
 		4CEBA79308679F100015D03E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					ppc64,
-					i386,
-					x86_64,
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_EXTENSION = jnilib;
 				EXECUTABLE_PREFIX = lib;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
+				GCC_MODEL_TUNING = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					TORRENT_DISABLE_GEO_IP,
+					NDEBUG,
+					TORRENT_DISABLE_RESOLVE_COUNTRIES,
+				);
+				GCC_VERSION = "";
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					"\"$(SRCROOT)/../../boost/boost\"",
 					"\"$(SRCROOT)/../../libtorrent/libtorrent/include\"",
-					"../../../openssl/openssl-0.9.8j",
 					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j\"",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"${OBJROOT}/Headers\"";
@@ -243,30 +247,35 @@
 				HEADER_SEARCH_PATHS_QUOTED_4 = "\"${TARGET_BUILD_DIR}/Headers\"/**";
 				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j/build\"",
 					"$(inherited)",
 					"\"$(SRCROOT)/../../libtorrent/mac/build/Release\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.0.1/release/address-model-32_64/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.0.1/release/address-model-32_64/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.0.1/release/address-model-32_64/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.0.1/release/address-model-32_64/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.0.1/release/address-model-32_64/architecture-combined/link-static/macosx-version-min-10.4/threading-multi\"",
-					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j/build\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/system/build/darwin-4.2.1/release/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/filesystem/build/darwin-4.2.1/release/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/date_time/build/darwin-4.2.1/release/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/regex/build/darwin-4.2.1/release/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
+					"\"$(SRCROOT)/../../boost/boost/bin.v2/libs/thread/build/darwin-4.2.1/release/address-model-32_64/architecture-x86/link-static/macosx-version-min-10.5/threading-multi\"",
 				);
 				LIBRARY_STYLE = DYNAMIC;
 				MACH_O_TYPE = mh_dylib;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-lssl",
 					"-ltorrent",
-					"-lboost_system-mt",
-					"-lboost_filesystem-mt",
-					"-lboost_thread-mt",
+					"-lboost_system",
+					"-lboost_filesystem",
+					"-lboost_thread",
+					"-lboost_date_time",
+					"-lboost_thread",
 				);
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = jnltorrent;
 				SDKROOT = macosx10.5;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
