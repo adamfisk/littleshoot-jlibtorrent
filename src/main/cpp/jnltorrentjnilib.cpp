@@ -21,6 +21,8 @@
 #include <boost/function.hpp>
 
 #include <libtorrent/session.hpp>
+#include <libtorrent/upnp.hpp>
+#include <libtorrent/natpmp.hpp>
 #include <libtorrent/alert.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/session_settings.hpp>
@@ -34,7 +36,17 @@
 
 using namespace std;
 
-#define ENABLE_MESSAGE_QUEUE 1
+#define LS_TRY_BEGIN try {
+
+#define LS_TRY_END \
+} catch (std::exception &e) \
+{ \
+    const std::string msg = std::string(BOOST_CURRENT_FUNCTION) + "Caught exception: " + std::string(e.what()); \
+    log_error(env, obj, msg.c_str()); \
+} catch (...) \
+{    \
+} 
+
 #define SAVE_SESSION_STATE 1
 
 #ifndef NDEBUG
@@ -54,6 +66,7 @@ using namespace std;
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
+
 typedef std::map<
     const std::string, const libtorrent::torrent_handle
 > TorrentPathToDownloadHandle;
@@ -69,13 +82,6 @@ typedef std::map<
 class session : private boost::noncopyable
 {
     public:
-    
-//#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-//        session()
-//        {
-            // ...
-//        }
-//#endif // ENABLE_MESSAGE_QUEUE
 
         static session & instance() 
         {
@@ -114,9 +120,9 @@ class session : private boost::noncopyable
                 libtorrent::alert::tracker_notification
             );
             
-            m_session->start_upnp();
+            m_upnp.reset(m_session->start_upnp());
 
-            m_session->start_natpmp();
+            m_natpmp.reset(m_session->start_natpmp());
 
             m_session->add_extension(&libtorrent::create_metadata_plugin);
             m_session->add_extension(&libtorrent::create_ut_pex_plugin);
@@ -132,19 +138,10 @@ class session : private boost::noncopyable
             m_session->set_settings(settings);
             
             m_upload_rate_limit = 1024 * 100;
-            
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-            //session::instance().tick();
-#endif // ENABLE_MESSAGE_QUEUE
         }
         
         void stop()
         {
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-            //cout << "Saving torrent states!!" << endl;
-            //save_state(true);
-            //session::instance().tick();
-#endif // ENABLE_MESSAGE_QUEUE
             m_session.reset();
         }
 	
@@ -575,7 +572,18 @@ class session : private boost::noncopyable
         {
             return m_session;
         }
+	
+		const boost::shared_ptr<libtorrent::upnp> & get_upnp()
+		{
+			return m_upnp;
+		}
+	
+		const boost::shared_ptr<libtorrent::natpmp> & get_natpmp()
+		{
+			return m_natpmp;
+		}
         
+	/*
         void load_state()
         {
 #if defined(SAVE_SESSION_STATE) && (SAVE_SESSION_STATE)
@@ -589,6 +597,7 @@ class session : private boost::noncopyable
             );
 #endif
         }
+	 */
         
         void save_torrents()
         {
@@ -652,6 +661,7 @@ class session : private boost::noncopyable
             m_session->resume();
         }
     
+	/*
         void save_state(bool flag = false)
         {
             save_torrents();
@@ -665,140 +675,39 @@ class session : private boost::noncopyable
             );
 #endif
         }
-        
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-        void tick()
-        {
-            std::cout << "##########: tick" << std::endl;
-
-            std::auto_ptr<libtorrent::alert> a;
-            
-            a = m_session->pop_alert();
-            
-            while (a.get())
-            {
-                std::cout << "########## Message:" << a->message() << std::endl;
-                if (libtorrent::tracker_announce_alert * p = dynamic_cast<
-                    libtorrent::tracker_announce_alert *>(a.get())
-                    )
-                 {
-                     std::cout << "########## tracker announce:" << a->message() << std::endl;
-                     if (p->handle.is_valid())
-                     {
-                         std::cout << 
-                             BOOST_CURRENT_FUNCTION << 
-                             ": tracker_announce_alert(" << p->message() << 
-                             ")." << 
-                         std::endl;
-                     }
-                }
-                
-                else if (libtorrent::tracker_reply_alert * p = dynamic_cast<
-                    libtorrent::tracker_reply_alert *>(a.get())
-                    )
-                {
-                    if (p->handle.is_valid())
-                    {
-                        std::cout << 
-                            BOOST_CURRENT_FUNCTION << 
-                            ": tracker_reply_alert(" << p->message() << 
-                            ")." << 
-                        std::endl;
-                    }
-                }
-                else if (libtorrent::portmap_alert * p = dynamic_cast<
-                    libtorrent::portmap_alert *>(a.get())
-                    )
-                {
-                    std::cout << 
-                        BOOST_CURRENT_FUNCTION << ": portmap_alert(" << 
-                        p->message() << ")." << 
-                    std::endl;
-                }
-                else if (
-                    libtorrent::save_resume_data_failed_alert * p = 
-                    dynamic_cast<libtorrent::save_resume_data_failed_alert *
-                    >(a.get())
-                    )
-                {
-                    std::cout << 
-                        BOOST_CURRENT_FUNCTION << 
-                        ": save_resume_data_failed_alert(" << 
-                        p->message() << ")." << 
-                    std::endl;
-                }
-                else if (
-                    libtorrent::save_resume_data_alert * p = dynamic_cast<
-                        libtorrent::save_resume_data_alert *
-                        >(a.get())
-                    )
-                {
-                    std::cout << 
-                        BOOST_CURRENT_FUNCTION << 
-                        ": save_resume_data_alert(" << 
-                        p->message() << ")." << 
-                    std::endl;
-                    
-                    libtorrent::torrent_handle h = p->handle;
-                    boost::filesystem::ofstream out(
-                        h.save_path() / (
-                            h.get_torrent_info().name() + ".fastresume"
-                        ), std::ios_base::binary
-                    );
-                    out.unsetf(std::ios_base::skipws);
-                    libtorrent::bencode(
-                        std::ostream_iterator<char>(out), *p->resume_data
-                    );
-                }
-                else
-                {
-                    std::cout << "Made last else..." << endl;
-                    std::cout << 
-                        BOOST_CURRENT_FUNCTION << 
-                        ": Alert(" << 
-                        a->message() << ")." << 
-                    std::endl;
-                }
-    
-                std::cout << "Popping alert" << endl;
-                a = m_session->pop_alert();
-            }
-            std::cout << "Out of while...********" << endl;
-            
-//            deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
-//            deadline_timer_.async_wait(boost::bind(
-//                &session::tick, boost::ref(instance()), boost::asio::placeholders::error)
-//            );
-        }
-
-#endif // ENABLE_MESSAGE_QUEUE
+	 */
 
     private:
     
         boost::shared_ptr<libtorrent::session> m_session;
+	    boost::shared_ptr<libtorrent::upnp> m_upnp;
+	    boost::shared_ptr<libtorrent::natpmp> m_natpmp;
         bool m_is_pro;
 		InfoHashToIndexMap m_piece_to_index_map;
 		TorrentPathToDownloadHandle m_torrent_path_to_handle;
         static const int PausedState = 200;
         int m_upload_rate_limit;
-		
-    protected:
-    
-#if defined(ENABLE_MESSAGE_QUEUE) && (ENABLE_MESSAGE_QUEUE)
-     //   boost::asio::io_service io_service_;
-       // boost::asio::deadline_timer deadline_timer_;
-     //   boost::shared_ptr<boost::thread> thread_;
-#endif // ENABLE_MESSAGE_QUEUE
 };
 
-void voidCall(const char* torrentPath, void (*pt2Func)(const char *))
-{
-    try
-    { 
+jmethodID m_sessionStatusTotalUpload;
+jmethodID m_sessionStatusTotalDownload;
+jmethodID m_sessionStatusTotalPayloadUpload;
+jmethodID m_sessionStatusTotalPayloadDownload;
+jmethodID m_sessionStatusUploadRate;
+jmethodID m_sessionStatusDownloadRate;
+jmethodID m_sessionStatusPayloadUploadRate;
+jmethodID m_sessionStatusPayloadDownloadRate;
+jmethodID m_sessionStatusNumPeers;
+jmethodID m_portMapAlert;
+jmethodID m_portMapLogAlert;
+jmethodID m_log;
+jmethodID m_logError;
+
+void voidCall(const char* torrentPath, void (*pt2Func)(const char *)) {
+    try { 
         pt2Func(torrentPath);
     }
-    catch (exception & e)
-    {
+    catch (exception & e) {
 #ifndef NDEBUG
         cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
 #endif
@@ -1227,11 +1136,75 @@ void set_max_upload_speed(int speed)
 {
     session::instance().set_max_upload_speed(speed);    
 }
-
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_set_1max_1upload_1speed(
     JNIEnv * env, jobject obj, jint arg
 ){return voidCall(env, arg, &set_max_upload_speed);}
 
+
+int map_upnp_port(libtorrent::upnp::protocol_type p, int localPort, int externalPort)
+{
+    try
+    { 
+		if (session::instance().get_upnp().get())
+		{
+			return session::instance().get_upnp()->add_mapping(libtorrent::upnp::tcp, localPort, externalPort);
+		}
+	}
+	catch (exception & e)
+	{
+#ifndef NDEBUG
+		cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+	}
+	return -1; 												
+}
+
+int map_natpmp_port(libtorrent::natpmp::protocol_type p, int localPort, int externalPort)
+{
+    try
+    { 
+		if (session::instance().get_natpmp().get())
+		{
+			return session::instance().get_natpmp()->add_mapping(p, localPort, externalPort);
+		}
+    }
+    catch (exception & e)
+    {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+	return -1; 												
+}
+												   
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1tcp_1upnp_1mapping
+(JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
+{return map_upnp_port(libtorrent::upnp::tcp, internalPort, externalPort);}
+
+
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1upnp_1mapping
+(JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
+{return map_upnp_port(libtorrent::upnp::udp, internalPort, externalPort);}
+
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1tcp_1natpmp_1mapping
+(JNIEnv * env, jobject obj, jint internalPort, jint externalPort) 
+{return map_natpmp_port(libtorrent::natpmp::tcp, internalPort, externalPort);}
+
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1natpmp_1mapping
+(JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
+{return map_natpmp_port(libtorrent::natpmp::udp, internalPort, externalPort);}
+
+void log_error(JNIEnv * env, jobject obj, const char* error) {
+	jstring msg = env->NewStringUTF(error);
+	env->CallVoidMethod(obj, m_logError, msg);
+	env->DeleteLocalRef(msg);
+}
+
+void log(JNIEnv * env, jobject obj, const char* info) {
+	jstring msg = env->NewStringUTF(info);
+	env->CallVoidMethod(obj, m_log, msg);
+	env->DeleteLocalRef(msg);
+}
 
 void checkMethodId(const jmethodID field)
 {
@@ -1263,15 +1236,19 @@ const jmethodID intMethodId(JNIEnv * env, const jclass cls, const char * methodN
     return id;
 }
 
-jmethodID m_sessionStatusTotalUpload;
-jmethodID m_sessionStatusTotalDownload;
-jmethodID m_sessionStatusTotalPayloadUpload;
-jmethodID m_sessionStatusTotalPayloadDownload;
-jmethodID m_sessionStatusUploadRate;
-jmethodID m_sessionStatusDownloadRate;
-jmethodID m_sessionStatusPayloadUploadRate;
-jmethodID m_sessionStatusPayloadDownloadRate;
-jmethodID m_sessionStatusNumPeers;
+const jmethodID intIntMethodId(JNIEnv * env, const jclass cls, const char * methodName)
+{
+    const jmethodID id = env->GetMethodID(cls, methodName, "(II)V");
+    checkMethodId(id);
+    return id;
+}
+
+const jmethodID methodId(JNIEnv * env, const jclass cls, const char * methodName, const char * signature)
+{
+    const jmethodID id = env->GetMethodID(cls, methodName, signature);
+    checkMethodId(id);
+    return id;
+}
 
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
@@ -1288,6 +1265,10 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
     m_sessionStatusPayloadUploadRate = floatMethodId(env, cls, "setPayloadUploadRate");
     m_sessionStatusPayloadDownloadRate = floatMethodId(env, cls, "setPayloadDownloadRate");
     m_sessionStatusNumPeers = intMethodId(env, cls, "setNumPeers");
+	m_portMapAlert = methodId(env, cls, "portMapAlert", "(III)V");
+	m_portMapLogAlert = methodId(env, cls, "portMapLogAlert", "(ILjava/lang/String;)V");
+	m_log = methodId(env, cls, "log", "(Ljava/lang/String;)V");
+	m_logError = methodId(env, cls, "log", "(Ljava/lang/String;)V");
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1status
@@ -1305,6 +1286,82 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1stat
     env->CallVoidMethod(obj, m_sessionStatusNumPeers, stat.num_peers);
 }
 
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_check_1alerts
+(JNIEnv * env, jobject obj) { 
+	LS_TRY_BEGIN;
 
+	const boost::shared_ptr<libtorrent::session> ses = session::instance().get_session();
+	
+	if (!ses.get()) {
+		return;
+	}
+	
+	std::auto_ptr<libtorrent::alert> a = ses.get()->pop_alert();
+	
+	while (a.get()) {
+		if (libtorrent::tracker_announce_alert * p = dynamic_cast<
+			libtorrent::tracker_announce_alert *>(a.get())) {
+			std::cout << "Tracker announce:" << a->message() << std::endl;
+			if (p->handle.is_valid()) {
+				std::cout << "Tracker_announce_alert: " << p->message() << std::endl;
+			}
+		}
+		
+		else if (libtorrent::tracker_reply_alert * p = dynamic_cast<
+				 libtorrent::tracker_reply_alert *>(a.get())) {
+			if (p->handle.is_valid()){
+				std::cout << ": tracker_reply_alert: " << p->message() << std::endl;
+			}
+		}
+		else if (libtorrent::portmap_alert * p = dynamic_cast<
+				 libtorrent::portmap_alert *>(a.get())){
+			std::cout << "PORT_MAP_ALERT: " << p->message() << std::endl;
+			env->CallVoidMethod(obj, m_portMapAlert, p->mapping, p->external_port, p->type);
+		}
+		else if (libtorrent::portmap_log_alert * p = dynamic_cast<
+				 libtorrent::portmap_log_alert *>(a.get())){
+			std::cout << "PORT_MAP_LOG_ALERT: " << p->message() << std::endl;
+			jstring msg = env->NewStringUTF(p->msg.c_str());
+			env->CallVoidMethod(obj, m_portMapLogAlert, p->type, msg);
+			env->DeleteLocalRef(msg);
+		}
+		
+		else if (libtorrent::portmap_error_alert * p = dynamic_cast<
+				 libtorrent::portmap_error_alert *>(a.get())) {
+			std::cout << "PORT_MAP_ERROR_ALERT: " << p->message() << std::endl;
+		}
+		else if (libtorrent::save_resume_data_failed_alert * p = 
+				 dynamic_cast<libtorrent::save_resume_data_failed_alert *>(a.get())) {
+			std::cout << "Save_resume_data_failed_alert: " << p->message() << std::endl;
+		}
+		else if (libtorrent::save_resume_data_alert * p = dynamic_cast<
+				 libtorrent::save_resume_data_alert * >(a.get())) {
+			std::cout << "Save_resume_data_alert:" << p->message() << std::endl;
+			/*
+			libtorrent::torrent_handle h = p->handle;
+			boost::filesystem::ofstream out(h.save_path() / (h.get_torrent_info().name() + ".fastresume"), std::ios_base::binary);
+			out.unsetf(std::ios_base::skipws);
+			libtorrent::bencode(std::ostream_iterator<char>(out), *p->resume_data);
+			 */
+		}
+		else {
+			std::cout << "ALERT WE DON'T HANDLE..." << endl;
+			std::cout << BOOST_CURRENT_FUNCTION << ": Alert(" << a->message() << ")." << std::endl;
+		}
+		a = ses->pop_alert();
+	}
+	LS_TRY_END;
+	/*
+	}
+    catch (exception & e) {
+		//const char* msg = 
+		const std::string msg = "Exception processing alerts: " + std::string(e.what());
+		log_error(env, obj, msg.c_str());
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    }
+	 */
+}
 
 
