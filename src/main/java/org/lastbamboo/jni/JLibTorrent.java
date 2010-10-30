@@ -3,6 +3,12 @@ package org.lastbamboo.jni;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -11,6 +17,7 @@ import java.util.Collection;
 public class JLibTorrent
     {
 
+    private final Logger m_log = LoggerFactory.getLogger(getClass());
     private long m_totalUploadBytes;
     private long m_totalDownloadBytes;
     private long m_totalPayloadUploadBytes;
@@ -61,6 +68,12 @@ public class JLibTorrent
         {
         cacheMethodIds();
         start(this.m_isPro);
+        try {
+            Thread.sleep(1000);
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+        checkAlerts();
         }
     
     public void updateSessionStatus() 
@@ -187,6 +200,81 @@ public class JLibTorrent
         }
     
     private native void set_max_upload_speed(final int bytesPerSecond);
+    
+    private final Map<Integer, PortMappingListener> m_mappingIdsToListeners =
+        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMappingListener>()
+            {
+            private static final long serialVersionUID = 748372975L;
+            @Override
+            protected boolean removeEldestEntry(
+                final Map.Entry<Integer, PortMappingListener> eldest)
+                {
+                // This makes the map automatically purge the least used
+                // entry.  
+                final boolean remove = size() > 200;
+                return remove;
+                }
+            });
+
+        
+    public void addTcpUpnpPortMapping(final PortMappingListener listener,
+        final int internalPort, final int externalPort)
+        {
+        final int mappingId = add_tcp_upnp_mapping(internalPort, externalPort);
+        m_mappingIdsToListeners.put(mappingId, listener);
+        }
+        
+    public void addUdpUpnpPortMapping(final PortMappingListener listener,
+        final int internalPort, final int externalPort)
+        {
+        final int mappingId = add_udp_upnp_mapping(internalPort, externalPort);
+        m_mappingIdsToListeners.put(mappingId, listener);
+        }
+        
+    public void addTcpNapPmpPortMapping(final PortMappingListener listener,
+        final int internalPort, final int externalPort)
+        {
+        final int mappingId = 
+            add_tcp_natpmp_mapping(internalPort, externalPort);
+        m_mappingIdsToListeners.put(mappingId, listener);
+        }
+        
+    public void addUdpNatPmpPortMapping(final PortMappingListener listener,
+        final int internalPort, final int externalPort)
+        {
+        final int mappingId = 
+            add_udp_natpmp_mapping(internalPort, externalPort);
+        m_mappingIdsToListeners.put(mappingId, listener);
+        }
+    
+    
+    private native int add_tcp_upnp_mapping(final int internalPort, final int externalPort);
+    private native int add_udp_upnp_mapping(final int internalPort, final int externalPort);
+    private native int add_tcp_natpmp_mapping(final int internalPort, final int externalPort);
+    private native int add_udp_natpmp_mapping(final int internalPort, final int externalPort);
+    
+    public void checkAlerts() 
+        {
+        final Runnable runner = new Runnable()
+            {
+
+            public void run() {
+                while (true) {
+                    check_alerts();
+                    try {
+                        Thread.sleep(2000);
+                    } catch (final InterruptedException e) {
+                        m_log.error("Interrupted?", e);
+                    }
+                }
+            }
+            };
+            final Thread t = new Thread(runner);
+            t.setDaemon(true);
+            t.start();
+        }
+    
+    private native void check_alerts();
     
     private final String normalizePath(final File torrentFile)
         {
@@ -337,5 +425,36 @@ public class JLibTorrent
         {
         return m_totalPayloadDownloadBytes;
         }
+    
+    public void portMapAlert(final int mappingId, final int externalPort, 
+        final int type) 
+        {
+        m_log.info("GOT PORT MAPPED!! ID: "+mappingId+
+            " EXTERNAL PORT: "+externalPort);
+        
+        final PortMappingListener listener = 
+            this.m_mappingIdsToListeners.get(mappingId);
+        
+        if (listener == null)
+            {
+            m_log.error("No listener for ID!! "+mappingId);
+            return;
+            }
+        listener.externalPortMapped(externalPort);
+        }
+    
+    public void portMapLogAlert(final int type, final String message) 
+        {
+        m_log.info("Port map log for type {}: "+message, type);
+        }
 
+    public void log(final String msg) 
+        {
+        m_log.info("From native code: {}", msg);
+        }
+    
+    public void logError(final String msg) 
+        {
+        m_log.error("From native code: {}", msg);
+        }
     }
