@@ -68,11 +68,6 @@ public class JLibTorrent
         {
         cacheMethodIds();
         start(this.m_isPro);
-        try {
-            Thread.sleep(1000);
-        } catch (final InterruptedException e) {
-            e.printStackTrace();
-        }
         checkAlerts();
         }
     
@@ -260,12 +255,14 @@ public class JLibTorrent
 
             public void run() {
                 while (true) {
-                    check_alerts();
+                    // We sleep first so we don't immediately start checking
+                    // before LibTorrent's initialized.
                     try {
                         Thread.sleep(2000);
                     } catch (final InterruptedException e) {
                         m_log.error("Interrupted?", e);
                     }
+                    check_alerts();
                 }
             }
             };
