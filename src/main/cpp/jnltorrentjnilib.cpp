@@ -1329,6 +1329,8 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_check_1alerts
 		else if (libtorrent::portmap_error_alert * p = dynamic_cast<
 				 libtorrent::portmap_error_alert *>(a.get())) {
 			std::cout << "PORT_MAP_ERROR_ALERT: " << p->message() << std::endl;
+			const std::string msg = "PORT_MAP_ERROR_ALERT: " + std::string(p->message()); 
+			log(env, obj, msg.c_str());
 		}
 		else if (libtorrent::save_resume_data_failed_alert * p = 
 				 dynamic_cast<libtorrent::save_resume_data_failed_alert *>(a.get())) {
