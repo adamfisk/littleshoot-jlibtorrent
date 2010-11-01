@@ -70,17 +70,14 @@ typedef std::map<
  * This implements a libtorrent session interface via a thread safe, 
  * non-copyable singleton instance.
  */
-class session : private boost::noncopyable
-{
+class session : private boost::noncopyable {
     public:
 
-        static session & instance() 
-        {
+        static session & instance() {
 			return boost::details::pool::singleton_default<session>::instance();
         }
 
-        void start(bool isPro)
-        {
+        void start(bool isPro) {
             std::cout << "Starting LittleShoot 1.0 session..." << std::endl;
             m_is_pro = isPro;
             const boost::uint8_t version_major = 0;
@@ -136,8 +133,10 @@ class session : private boost::noncopyable
 			std::vector<char> in;
 			if (libtorrent::load_file(".ses_state", in) == 0) {
                 libtorrent::lazy_entry e;
-                if (libtorrent::lazy_bdecode(&in[0], &in[0] + in.size(), e) == 0)
+                if (libtorrent::lazy_bdecode(&in[0], &in[0] + in.size(), e) == 0) {
+					cout << "LOADING SESSION STATE" << endl;
 					m_session->load_state(e);
+				}
 			}
         }
 	
@@ -151,10 +150,13 @@ class session : private boost::noncopyable
 				 i != m_torrent_path_to_handle.end(); ++i) {
 				const torrent_handle& h = i->second;
 				if (!h.is_valid()) continue;
-				//if (h.is_paused()) continue;
+				
+				// If the torrent is paused, we've already saved the resume data.
+				if (h.is_paused()) continue;
 				if (!h.has_metadata()) continue;
 				
-				printf("saving resume data for %s\n", h.name().c_str());
+				printf("Saving resume data for %s\n", h.name().c_str());
+				
 				// save_resume_data will generate an alert when it's done
 				h.save_resume_data();
 				++num_resume_data;
@@ -184,26 +186,15 @@ class session : private boost::noncopyable
 				if (!rd) continue;
 				--num_resume_data;
 				
-				if (!rd->resume_data) continue;
+				if (!handle_resume_data_alert(*rd)) {
+					continue;
+				}
 				
-				torrent_handle h = rd->handle;				
-				boost::filesystem::ofstream out(h.save_path()
-												/ (h.get_torrent_info().name() + ".resume"), std::ios_base::binary);
-				out.unsetf(std::ios_base::skipws);
-				bencode(std::ostream_iterator<char>(out), *rd->resume_data);
-				
-				//std::vector<char> out;
-				//bencode(std::back_inserter(out), *rd->resume_data);
-				//save_file((h.save_path() / h.name()).string() + ".resume", out);
 			}
 			printf("saving session state\n");
 			{
 				entry session_state;
 				m_session->save_state(session_state);
-				
-				//std::vector<char> out;
-				//bencode(std::back_inserter(out), session_state);
-				//save_file(".ses_state", out);
 				
 				boost::filesystem::ofstream out(".ses_state", std::ios_base::binary);
 				out.unsetf(std::ios_base::skipws);
@@ -215,159 +206,16 @@ class session : private boost::noncopyable
 			m_session.reset();
 	    }
 	
-	/*
-		int save_file(boost::filesystem::path const& filename, std::vector<char>& v) {
-			using namespace libtorrent;
+		bool handle_resume_data_alert(const libtorrent::save_resume_data_alert& rd) {
+			if (!rd.resume_data) return false;
 			
-			file f;
-			error_code ec;
-			if (!f.open(filename, file::write_only, ec)) return -1;
-			if (ec) return -1;
-			file::iovec_t b = {&v[0], v.size()};
-			size_type written = f.writev(0, &b, 1, ec);
-			
-			// Note std::vector size_type is an unsigned int, but it will not be negative.
-			if (written != v.size()) return -3;
-			if (ec) return -3;
-			return 0;
+			libtorrent::torrent_handle h = rd.handle;
+			boost::filesystem::path full_path = h.save_path() / "resume.fastresume";
+			boost::filesystem::ofstream out(full_path, std::ios_base::binary);
+			out.unsetf(std::ios_base::skipws);
+			bencode(std::ostream_iterator<char>(out), *rd.resume_data);
+			return true;
 		}
-	 */
-	
-	/*
-	EXTERN_HEADER EXTERN_RET save_dht_state(const wchar_t* dht_state_file_path) {
-        EXTERN_TRY_CONTAINER_BEGIN;
-		std::wstring file(dht_state_file_path);
-		boost::filesystem::wpath full_path(file);
-		boost::filesystem::ofstream out(full_path, std::ios_base::binary);
-		out.unsetf(std::ios_base::skipws);
-		libtorrent::entry dht_state = session->dht_state();
-		libtorrent::bencode(std::ostream_iterator<char>(out), dht_state);
-		out.close();
-        EXTERN_TRY_CONTAINER_END;
-	}
-	 */
-	
-	/*
-		const libtorrent::torrent_handle download_torrent(
-            const char * incompleteDir, 
-            const char * torrentPath, 
-            std::size_t size,
-            bool sequential,
-            int torrent_state
-            ) {
-            
-			cout << "Building buffer of size: " << size << endl;
-			vector<char> buf(size);
-			boost::filesystem::ifstream(torrentPath, ios_base::binary).read(&buf[0], size);
-            
-            //libtorrent::entry e;
-            libtorrent::lazy_entry e;
-            try {
-                //e = libtorrent::bdecode(
-                //    buf.begin(), buf.end()
-                //);
-                int ret = lazy_bdecode(&buf[0], &buf[0] + buf.size(), e);
-
-                if (ret != 0) {
-                    std::cerr << "invalid bencoding: " << ret << std::endl;
-                    return libtorrent::torrent_handle();
-                }
-            }
-            catch (std::exception & e) {
-                std::cout << 
-                    BOOST_CURRENT_FUNCTION << ": caught(" << 
-                    e.what() << ")returning invalid handle." << 
-                std::endl;
-                
-                return libtorrent::torrent_handle();
-            }
-            
-            log_debug("Using incomplete dir" << incompleteDir);
-			libtorrent::add_torrent_params p;
-            
-            boost::filesystem::path system_incomplete_path(incompleteDir);
-             
-            bool is_resume = false;
-            if (!boost::filesystem::exists(system_incomplete_path)) {
-                log_debug("Incomplete path not found.");
-            }
-            else {
-                cout << "Found incomplete path" << endl;
-                //std::string filename = (system_incomplete_path / ("resume.fastresume")).string();
-                
-	 
-	            //const boost::filesystem::path resume_file_path(system_incomplete_path / "resume.fastresume");
-                
-                //std::vector<char> resume_buf;
-                //if (libtorrent::load_file(resume_file_path, resume_buf) == 0)
-                //{
-                    //cout << "Setting resume data using path" << endl;
-                    //cout << "Not really setting resume data..." << endl;
-                    //p.resume_data = &resume_buf;
-                    //is_resume = true;
-                //}
-            }
-            p.ti = new libtorrent::torrent_info(e);
-            p.save_path = incompleteDir;
-            if (!is_resume) {
-                p.auto_managed = true;
-                
-                // Compact mode for single file torrents.
-                p.storage_mode = 
-                    sequential ? 
-                    libtorrent::storage_mode_compact : 
-                    libtorrent::storage_mode_sparse;
-                
-                // The LibTorrent docs say torrents should be added in the
-                // paused state, but we've seen them just stay paused 
-                // forever in that case.
-                p.paused = false;
-                p.duplicate_is_error = false;
-            }
-            
-            //cout << "About to add torrent..." << endl;
-            libtorrent::torrent_handle handle = m_session->add_torrent(p);
-            log_debug("Added torrent...");
-
-            if (!is_resume) {
-                //cout << "Configuring fresh torrent" << endl;
-                // Sequential mode for single file torrents.
-                handle.set_sequential_download(sequential);
-                if (m_is_pro) {
-                    log_debug("Setting max connections to 60 for pro");
-                    handle.set_max_connections(60);
-                }
-                else {
-                    log_debug("Setting max connections for free");
-                    handle.set_max_connections(50);
-                }
-                handle.set_max_uploads(-1);
-                //handle.set_upload_limit(1024 * 32);
-                handle.set_download_limit(-1);
-            }
-            
-            log_debug("Adding torrent path to map: " << torrentPath);
-            
-            const string stringPath = torrentPath;
-            m_torrent_path_to_handle.insert(
-                TorrentPathToDownloadHandle::value_type(stringPath, handle));
-            
-            log_debug("Torrent name: " << handle.name());
-
-            return handle;
-		}
-*/
-	
-	/*
-		void add_torrent(libtorrent::session& ses
-						 , handles_t& handles
-						 , std::string const& torrent
-						 , float preferred_ratio
-						 , bool sequential
-						 , path const& save_path
-						 , int torrent_upload_limit
-						 , int torrent_download_limit) {
-	 */
 	
 		void download_torrent(const char * incompleteDir, const char * torrentPath, 
 			std::size_t size, bool sequential) {
@@ -387,17 +235,18 @@ class session : private boost::noncopyable
 			lazy_entry resume_data;
 			
 			const boost::filesystem::path save_path(incompleteDir);
-			const std::string filename = (save_path / (t->name() + ".resume")).string();
+			
+			// This only works because the save paths are themselves unique.
+			const std::string filename = (save_path / "resume.fastresume").string();
 			
 			std::vector<char> buf;
 			if (load_file(filename.c_str(), buf) == 0) {
 				p.resume_data = &buf;
-				cout << "\n\n\n\nUSING FAST RESUME DATA\n\n\n\n" << endl;
+				cout << "USING FAST RESUME DATA FOR FILE: " << filename.c_str() << endl;
 			} else {
-				cout << "\n\n\n\nNOT USING FAST RESUME DATA\n\n\n\n" << endl;
+				cout << "NOT USING FAST RESUME DATA FOR FILE: " << filename.c_str() << endl;
 			}
 
-			
 			p.ti = t;
 			p.save_path = save_path;
 			
@@ -543,9 +392,7 @@ class session : private boost::noncopyable
                     //log_debug("num pieces is: " << ti.num_pieces());
                     
                     const unsigned long maxByte = j * ti.piece_length();
-                    
                     log_debug("max byte is: " << maxByte);
-
                     return maxByte;
                 }
             }
@@ -632,11 +479,9 @@ class session : private boost::noncopyable
             if (!boost::filesystem::exists(downloadsDir)) {
                 cerr << "Downloads dir does not exist at: " << downloadsDir << endl;
                 return;
-                //boost::filesystem::create_directory(full_path);
             }
-            //const boost::filesystem::path downloadsDir(downloadsDirString);
             th.move_storage(downloadsDir);
-            //return downloadsDir;
+			th.save_resume_data();
         }
     
     
@@ -677,101 +522,6 @@ class session : private boost::noncopyable
 			return m_natpmp;
 		}
         
-	/*
-        void load_state()
-        {
-#if defined(SAVE_SESSION_STATE) && (SAVE_SESSION_STATE)
-            boost::filesystem::ifstream state_file(
-                "/session_state.dat", std::ios_base::binary
-            );
-            state_file.unsetf(std::ios_base::skipws);
-            m_session->load_state(libtorrent::bdecode(
-                std::istream_iterator<char>(state_file), 
-                std::istream_iterator<char>())
-            );
-#endif
-        }
-	 */
-        
-	/*
-        void save_torrents()
-        {
-            int num_resume_data = 0;
-            std::vector<libtorrent::torrent_handle> handles = m_session->get_torrents();
-            m_session->pause();
-            for (std::vector<libtorrent::torrent_handle>::iterator i = handles.begin();
-                 i != handles.end(); ++i)
-            {
-                libtorrent::torrent_handle& h = *i;
-                if (!h.has_metadata()) continue;
-                if (!h.is_valid()) continue;
-                
-                h.save_resume_data();
-                ++num_resume_data;
-            }
-            
-            std::cout << "About to loop through alerts... " << std::endl;
-            while (num_resume_data > 0)
-            {
-                cout << "Waiting for alert" << endl;
-                libtorrent::alert const* a = 
-                    m_session->wait_for_alert(libtorrent::seconds(10));
-                cout << "Got alert" << endl;
-                
-                // if we don't get an alert within 10 seconds, abort
-                if (a == 0) 
-                {
-                    cout << "Alert is null...aborting." << endl;
-                    break;
-                }
-                
-                std::auto_ptr<libtorrent::alert> holder = m_session->pop_alert();
-                
-                if (dynamic_cast<libtorrent::save_resume_data_failed_alert const*>(a))
-                {
-                    //process_alert(a);
-                    cout << "Got failure...decrementing resumes..." << endl;
-                    --num_resume_data;
-                    continue;
-                }
-                
-                libtorrent::save_resume_data_alert const* rd = 
-                    dynamic_cast<libtorrent::save_resume_data_alert const*>(a);
-                if (rd == 0)
-                {
-                    //process_alert(a);
-                    cout << "Not a resume data alert...continuing" << endl;
-                    continue;
-                }
-                
-                libtorrent::torrent_handle h = rd->handle;
-                boost::filesystem::ofstream out(h.save_path()
-                                                / ("resume.fastresume"), std::ios_base::binary);
-                out.unsetf(std::ios_base::skipws);
-                bencode(std::ostream_iterator<char>(out), *rd->resume_data);
-                
-                cout << "Got a resume alert...decrementing count..." << endl;
-                --num_resume_data;
-            }
-            m_session->resume();
-        }
-	 */
-    
-	/*
-        void save_state(bool flag = false)
-        {
-            save_torrents();
-#if defined(SAVE_SESSION_STATE) && (SAVE_SESSION_STATE)
-            boost::filesystem::ofstream out(
-                "/session_state.dat", std::ios_base::binary
-            );
-            out.unsetf(std::ios_base::skipws);
-            libtorrent::bencode(
-                std::ostream_iterator<char>(out), m_session->state()
-            );
-#endif
-        }
-	 */
 
     private:
     
@@ -1026,8 +776,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_
 ) {return longCall(env, arg, &indexFunc);}
  
 
-string const nameFunc(const char* torrentPath)
-{
+string const nameFunc(const char* torrentPath) {
     return session::instance().get_name_for_torrent(torrentPath);
 }
 JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1torrent(
@@ -1035,8 +784,7 @@ JNIEXPORT jstring JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1name_1for_1to
 ){return stringCall(env, arg, &nameFunc);}
 
 
-boost::int64_t sizeFunc(const char* torrentPath)
-{    
+boost::int64_t sizeFunc(const char* torrentPath) {    
     return session::instance().status(torrentPath).total_wanted;
 }
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torrent(
@@ -1044,10 +792,8 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1size_1for_1torr
 ) {return longCall(env, arg, &sizeFunc);}
 
 
-void removeTorrentFunc(const char * torrentPath)
-{    
-    if (torrentPath)
-    {
+void removeTorrentFunc(const char * torrentPath) {    
+    if (torrentPath) {
         session::instance().remove_torrent(torrentPath);
     }
 }    
@@ -1055,10 +801,8 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent(
     JNIEnv * env, jobject obj, jstring arg
 ) {return voidCall(env, arg, &removeTorrentFunc);}
 
-void removeTorrentAndFilesFunc(const char * torrentPath)
-{    
-    if (torrentPath)
-    {
+void removeTorrentAndFilesFunc(const char * torrentPath) {    
+    if (torrentPath){
         session::instance().remove_torrent_and_files(torrentPath);
     }
 } 
@@ -1066,8 +810,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_remove_1torrent_1and_
     JNIEnv * env, jobject obj, jstring arg
 ) {return voidCall(env, arg, &removeTorrentAndFilesFunc);}                        
 
-int stateFunc(const char* torrentPath)
-{    
+int stateFunc(const char* torrentPath) {    
     return session::instance().get_state_for_torrent(torrentPath); 
 }
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torrent(
@@ -1075,16 +818,13 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1state_1for_1torr
 ) {return intCall(env, arg, &stateFunc);}
 
 
-int numFilesFunc(const char* torrentPath)
-{
+int numFilesFunc(const char* torrentPath) {
     const libtorrent::torrent_handle th = 
         session::instance().handle(torrentPath);
     
-    if (th.is_valid() && th.has_metadata())
-    {
+    if (th.is_valid() && th.has_metadata()) {
         return th.get_torrent_info().num_files();
-    } else
-    { 
+    } else { 
         return 0;
     }
 }
@@ -1120,11 +860,8 @@ JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1t
 ) {return floatCall(env, arg, &speedFunc);}
 
 
-void moveToDownloadsDirFunc(const char* torrentPath, const char* downloadsDir)
-{
+void moveToDownloadsDirFunc(const char* torrentPath, const char* downloadsDir) {
     session::instance().move_to_downloads_dir(torrentPath, downloadsDir);
-    //session::instance().save_torrents();
-    //return newPath.string();
 }
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_move_1to_1downloads_1dir(
     JNIEnv * env, jobject obj, jstring arg, jstring downloadsDirString
@@ -1135,16 +872,14 @@ void renameFunc(const char* torrentPath, const char* newName) {
 }
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_rename(
     JNIEnv * env, jobject obj, jstring torrentPath, jstring newName)
-{return voidCall(env, torrentPath, newName, &renameFunc);}
-
-    
+{return voidCall(env, torrentPath, newName, &renameFunc);}    
 
 void pause(const char* torrentPath) {
     const libtorrent::torrent_handle th = session::instance().handle(torrentPath);
     if (th.is_valid()) {
         th.auto_managed(false);
         th.pause();
-        //session::instance().save_torrents();
+		th.save_resume_data();
     }
 }
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_pause_1torrent(
@@ -1158,7 +893,6 @@ void resume(const char* torrentPath) {
         th.auto_managed(true);
         cout << "Resumed...set auto_managed to true" << endl;
     }
-    //session::instance().save_torrents();
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_resume_1torrent(
@@ -1367,13 +1101,11 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_check_1alerts
 		else if (libtorrent::save_resume_data_alert * p = dynamic_cast<
 				 libtorrent::save_resume_data_alert * >(a.get())) {
 			std::cout << "Save_resume_data_alert:" << p->message() << std::endl;
-			/*
-			libtorrent::torrent_handle h = p->handle;
-			boost::filesystem::ofstream out(h.save_path() / (h.get_torrent_info().name() + ".fastresume"), std::ios_base::binary);
-			out.unsetf(std::ios_base::skipws);
-			libtorrent::bencode(std::ostream_iterator<char>(out), *p->resume_data);
-			 */
+			if (p) {
+				session::instance().handle_resume_data_alert(*p);
+			}
 		}
+		
 		else {
 			std::cout << "ALERT WE DON'T HANDLE..." << endl;
 			std::cout << BOOST_CURRENT_FUNCTION << ": Alert(" << a->message() << ")." << std::endl;
