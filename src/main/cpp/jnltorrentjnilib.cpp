@@ -464,14 +464,8 @@ class session : private boost::noncopyable {
             
             if (!th.is_valid()) {
                 log_debug("Invalid torrent");
-                return;// boost::filesystem::path(".");
+                return;
             }
-            //const boost::filesystem::path savePath = th.save_path();
-            //cout << "Save path is: " << savePath.string() << endl;
-            //const boost::filesystem::path tempDir = savePath.parent_path();
-            //const boost::filesystem::path sharedDir = tempDir.parent_path();
-            //const boost::filesystem::path sharedDir = incompleteDir.parent_path();
-            //const boost::filesystem::path downloadsDir(sharedDir / "downloads");
             boost::filesystem::path downloadsDir = 
                 boost::filesystem::system_complete(
                     boost::filesystem::path(downloadsDirString, boost::filesystem::native));
@@ -481,6 +475,10 @@ class session : private boost::noncopyable {
                 return;
             }
             th.move_storage(downloadsDir);
+			
+			// See the LibTorrent documentation on fast resume. They recommend saving resume
+			// data for complete files and for paused files in addition to on shutdown 
+			// of course.
 			th.save_resume_data();
         }
     
