@@ -79,11 +79,10 @@ public class JLibTorrent
     public void download(final File incompleteDir, final File torrentFile, 
         final boolean sequential, final int torrentState) throws IOException 
         {
-        final long handle = add_torrent(incompleteDir.getCanonicalPath(), 
+        add_torrent(incompleteDir.getCanonicalPath(), 
             torrentFile.getCanonicalPath(), (int) torrentFile.length(), 
             sequential, torrentState);
         }
-    
 
     public void rename(final File torrentFile, final String newName)
         {
@@ -129,7 +128,7 @@ public class JLibTorrent
      */
     public void hardResumeTorrent(final File torrentFile)
         {
-        System.out.println("Performing hard resume");
+        m_log.info("Performing hard resume");
         final String path = normalizePath(torrentFile);
         hard_resume_torrent(path);
         }
