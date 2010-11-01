@@ -71,8 +71,18 @@ public class JLibTorrent
         checkAlerts();
         }
     
+    /**
+     * Shuts down the libtorrent core.
+     */
+    public void stopLibTorrent() 
+        {
+        m_stopped = true;
+        stop();
+        }
+    
     public void updateSessionStatus() 
         {
+        if (this.m_stopped) return;
         update_session_status();
         }
     
@@ -100,6 +110,7 @@ public class JLibTorrent
 
     public long getMaxByteForTorrent(final File torrentFile)
         {
+        if (this.m_stopped) return -1L;
         final String path = normalizePath(torrentFile);
         return get_max_byte_for_torrent(path);
         }
@@ -154,6 +165,7 @@ public class JLibTorrent
     
     public int getStateForTorrent(final File torrentFile)
         {
+        if (this.m_stopped) return -1;
         final String path = normalizePath(torrentFile);
         return get_state_for_torrent(path);
         }
@@ -209,6 +221,8 @@ public class JLibTorrent
                 return remove;
                 }
             });
+    
+    private volatile boolean m_stopped;
 
         
     public void addTcpUpnpPortMapping(final PortMappingListener listener,
@@ -253,7 +267,7 @@ public class JLibTorrent
             {
 
             public void run() {
-                while (true) {
+                while (!m_stopped) {
                     // We sleep first so we don't immediately start checking
                     // before LibTorrent's initialized.
                     try {
@@ -324,10 +338,7 @@ public class JLibTorrent
      */
     private native void start(final boolean isPro);
     
-    /**
-     * Shuts down the libtorrent core.
-     */
-    public native void stop();
+    private native void stop();
     
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential, int torrentState);
