@@ -28,9 +28,8 @@ public class JLibTorrentTest
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
-    @Test public void testTorrent() throws Exception
+     @Test public void testTorrent() throws Exception
         {
-        //final File pwd = new File("./src/main/resources");
         final File pwd = new File("../../lib");
         
         final File fullFile = 
@@ -56,7 +55,7 @@ public class JLibTorrentTest
             }
 
         System.out.println("Stopping torrent...");
-        torrent.stop();
+        torrent.stopLibTorrent();
         }
     
     private File downloadTorrentFile(final String uri) throws IOException
