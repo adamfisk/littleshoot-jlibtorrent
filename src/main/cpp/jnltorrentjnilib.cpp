@@ -77,9 +77,10 @@ class session : private boost::noncopyable {
 			return boost::details::pool::singleton_default<session>::instance();
         }
 
-        void start(bool isPro) {
+        void start(bool isPro, const char* dataDir) {
             std::cout << "Starting LittleShoot 1.0 session..." << std::endl;
             m_is_pro = isPro;
+			m_data_dir.reset(new boost::filesystem::path(dataDir, boost::filesystem::native));
             const boost::uint8_t version_major = 0;
             const boost::uint8_t version_minor = 1;
             const boost::uint8_t version_micro = 1;
@@ -130,8 +131,11 @@ class session : private boost::noncopyable {
             
             m_upload_rate_limit = 1024 * 100;
 			
+			boost::filesystem::path state_path = *m_data_dir.get() / ".ses_state";
+			
 			std::vector<char> in;
-			if (libtorrent::load_file(".ses_state", in) == 0) {
+			//if (libtorrent::load_file(".ses_state", in) == 0) {
+		    if (libtorrent::load_file(state_path.string(), in) == 0) {
                 libtorrent::lazy_entry e;
                 if (libtorrent::lazy_bdecode(&in[0], &in[0] + in.size(), e) == 0) {
 					cout << "LOADING SESSION STATE" << endl;
@@ -196,13 +200,17 @@ class session : private boost::noncopyable {
 				entry session_state;
 				m_session->save_state(session_state);
 				
-				boost::filesystem::ofstream out(".ses_state", std::ios_base::binary);
+				boost::filesystem::path state_path = *m_data_dir.get() / ".ses_state";
+				
+				cout << "Saving session state to: " << state_path.string() << endl;
+				boost::filesystem::ofstream out(state_path.string(), std::ios_base::binary);
 				out.unsetf(std::ios_base::skipws);
 				bencode(std::ostream_iterator<char>(out), session_state);
 			}
 			
 			printf("closing session");
 			
+			m_data_dir.reset();
 			m_session.reset();
 	    }
 	
@@ -524,6 +532,7 @@ class session : private boost::noncopyable {
     private:
     
         boost::shared_ptr<libtorrent::session> m_session;
+		boost::shared_ptr<boost::filesystem::path> m_data_dir;
 	    libtorrent::upnp* m_upnp;
 	    libtorrent::natpmp* m_natpmp;
         bool m_is_pro;
@@ -724,9 +733,15 @@ jstring const stringCall(JNIEnv * env, const jstring& arg, string const (*pt2Fun
 // Java function to C interfaces.
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_start(
-    JNIEnv * env , jobject obj, jboolean isPro) {
+    JNIEnv * env , jobject obj, jboolean isPro, jstring dataDir) {
     std::cout << "jnltorrent start" << std::endl;
-    session::instance().start(isPro);
+	const char * dataPath  = env->GetStringUTFChars(dataDir, JNI_FALSE);
+    if (!dataPath) {
+		cerr << "Out of memory!!" << endl;
+		return; // OutOfMemoryError already thrown 
+	}
+    session::instance().start(isPro, dataPath);
+	env->ReleaseStringUTFChars(dataDir, dataPath);
 }
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_stop(JNIEnv * env , jobject obj) {

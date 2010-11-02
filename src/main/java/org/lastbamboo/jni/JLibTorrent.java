@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.lastbamboo.common.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ public class JLibTorrent
     private float m_payloadDownloadRate;
     private int m_numPeers;
     private final boolean m_isPro;
+    private final File m_dataDir = CommonUtils.getLittleShootDir();
 
     public JLibTorrent(final Collection<File> libFiles, final boolean isPro)
         {
@@ -67,7 +69,7 @@ public class JLibTorrent
     private void init()
         {
         cacheMethodIds();
-        start(this.m_isPro);
+        start(this.m_isPro, normalizePath(this.m_dataDir));
         checkAlerts();
         }
     
@@ -335,8 +337,11 @@ public class JLibTorrent
     
     /**
      * Initialize the libtorrent core.
+     * 
+     * @param dataDir The path to the data directory for storing certain kinds
+     * of files.
      */
-    private native void start(final boolean isPro);
+    private native void start(final boolean isPro, final String dataDir);
     
     private native void stop();
     
