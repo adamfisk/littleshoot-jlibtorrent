@@ -264,7 +264,6 @@
 					"-lboost_filesystem",
 					"-lboost_thread",
 					"-lboost_date_time",
-					"-lboost_thread",
 				);
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
