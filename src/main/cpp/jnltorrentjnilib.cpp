@@ -230,7 +230,7 @@ class session : private boost::noncopyable {
 			using namespace libtorrent;
 			
 			boost::intrusive_ptr<torrent_info> t;
-			error_code ec;
+			libtorrent::error_code ec;
 			t = new torrent_info(torrentPath, ec);
 			if (ec) {
 				fprintf(stderr, "%s: %s\n", torrentPath, ec.message().c_str());
