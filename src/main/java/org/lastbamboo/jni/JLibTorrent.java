@@ -23,10 +23,10 @@ public class JLibTorrent
     private long m_totalDownloadBytes;
     private long m_totalPayloadUploadBytes;
     private long m_totalPayloadDownloadBytes;
-    private float m_uploadRate;
-    private float m_downloadRate;
-    private float m_payloadUploadRate;
-    private float m_payloadDownloadRate;
+    private int m_uploadRate;
+    private int m_downloadRate;
+    private int m_payloadUploadRate;
+    private int m_payloadDownloadRate;
     private int m_numPeers;
     private final boolean m_isPro;
     private final File m_dataDir = CommonUtils.getLittleShootDir();
@@ -358,8 +358,9 @@ public class JLibTorrent
         return m_totalUploadBytes;
         }
 
-    private void setTotalDownloadBytes(final long totalDownloadBytes)
+    public void setTotalDownloadBytes(final long totalDownloadBytes)
         {
+        //m_log.info("Setting total download bytes to: {}", totalDownloadBytes);
         m_totalDownloadBytes = totalDownloadBytes;
         }
 
@@ -368,22 +369,24 @@ public class JLibTorrent
         return m_totalDownloadBytes;
         }
 
-    private void setDownloadRate(final float downloadRate)
+    private void setDownloadRate(final int downloadRate)
         {
+        //m_log.info("Setting download rate to: {}", downloadRate);
         m_downloadRate = downloadRate;
         }
 
-    public float getDownloadRate()
+    public int getDownloadRate()
         {
         return m_downloadRate;
         }
 
-    private void setUploadRate(float uploadRate)
+    private void setUploadRate(final int uploadRate)
         {
+        //m_log.info("Setting upload rate to: {}", uploadRate);
         m_uploadRate = uploadRate;
         }
 
-    public float getUploadRate()
+    public int getUploadRate()
         {
         return m_uploadRate;
         }
@@ -398,22 +401,22 @@ public class JLibTorrent
         return m_numPeers;
         }
 
-    private void setPayloadUploadRate(float payloadUploadRate)
+    private void setPayloadUploadRate(final int payloadUploadRate)
         {
         m_payloadUploadRate = payloadUploadRate;
         }
 
-    public float getPayloadUploadRate()
+    public int getPayloadUploadRate()
         {
         return m_payloadUploadRate;
         }
 
-    private void setPayloadDownloadRate(float payloadDownloadRate)
+    private void setPayloadDownloadRate(final int payloadDownloadRate)
         {
         m_payloadDownloadRate = payloadDownloadRate;
         }
 
-    public float getPayloadDownloadRate()
+    public int getPayloadDownloadRate()
         {
         return m_payloadDownloadRate;
         }

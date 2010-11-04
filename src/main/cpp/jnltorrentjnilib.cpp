@@ -1037,10 +1037,10 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
     m_sessionStatusTotalDownload = longMethodId(env, cls, "setTotalDownloadBytes");
     m_sessionStatusTotalPayloadUpload = longMethodId(env, cls,"setTotalPayloadUploadBytes");
     m_sessionStatusTotalPayloadDownload = longMethodId(env, cls, "setTotalPayloadDownloadBytes");
-    m_sessionStatusUploadRate = floatMethodId(env, cls, "setUploadRate");
-    m_sessionStatusDownloadRate = floatMethodId(env, cls, "setDownloadRate");
-    m_sessionStatusPayloadUploadRate = floatMethodId(env, cls, "setPayloadUploadRate");
-    m_sessionStatusPayloadDownloadRate = floatMethodId(env, cls, "setPayloadDownloadRate");
+    m_sessionStatusUploadRate = intMethodId(env, cls, "setUploadRate");
+    m_sessionStatusDownloadRate = intMethodId(env, cls, "setDownloadRate");
+    m_sessionStatusPayloadUploadRate = intMethodId(env, cls, "setPayloadUploadRate");
+    m_sessionStatusPayloadDownloadRate = intMethodId(env, cls, "setPayloadDownloadRate");
     m_sessionStatusNumPeers = intMethodId(env, cls, "setNumPeers");
 	m_portMapAlert = methodId(env, cls, "portMapAlert", "(III)V");
 	m_portMapLogAlert = methodId(env, cls, "portMapLogAlert", "(ILjava/lang/String;)V");
