@@ -39,9 +39,10 @@ public class JLibTorrent
             {
             if (lib.isFile())
                 {
+                m_log.info("Loading: "+lib);
                 System.load(lib.getAbsolutePath());
                 libLoaded = true;
-                System.out.println("Loading: "+lib);
+                m_log.info("Loaded: "+lib);
                 break;
                 }
             }
@@ -184,7 +185,7 @@ public class JLibTorrent
         return get_num_files_for_torrent(path);
         }
 
-    public double getDownloadSpeed(final File torrentFile)
+    public int getDownloadSpeed(final File torrentFile)
         {
         final String path = normalizePath(torrentFile);
         return get_speed_for_torrent(path);
@@ -313,7 +314,7 @@ public class JLibTorrent
     
     private native int get_num_peers_for_torrent(final String path);
     
-    private native double get_speed_for_torrent(final String path);
+    private native int get_speed_for_torrent(final String path);
 
     private native int get_num_files_for_torrent(final String path);
     
@@ -342,13 +343,14 @@ public class JLibTorrent
      * of files.
      */
     private native void start(final boolean isPro, final String dataDir);
+    //private native void start(final boolean isPro);
     
     private native void stop();
     
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential, int torrentState);
 
-    private void setTotalUploadBytes(final long totalUploadBytes)
+    public void setTotalUploadBytes(final long totalUploadBytes)
         {
         m_totalUploadBytes = totalUploadBytes;
         }
@@ -369,7 +371,7 @@ public class JLibTorrent
         return m_totalDownloadBytes;
         }
 
-    private void setDownloadRate(final int downloadRate)
+    public void setDownloadRate(final int downloadRate)
         {
         //m_log.info("Setting download rate to: {}", downloadRate);
         m_downloadRate = downloadRate;
@@ -380,7 +382,7 @@ public class JLibTorrent
         return m_downloadRate;
         }
 
-    private void setUploadRate(final int uploadRate)
+    public void setUploadRate(final int uploadRate)
         {
         //m_log.info("Setting upload rate to: {}", uploadRate);
         m_uploadRate = uploadRate;
@@ -391,7 +393,7 @@ public class JLibTorrent
         return m_uploadRate;
         }
 
-    private void setNumPeers(int numPeers)
+    public void setNumPeers(int numPeers)
         {
         m_numPeers = numPeers;
         }
@@ -401,7 +403,7 @@ public class JLibTorrent
         return m_numPeers;
         }
 
-    private void setPayloadUploadRate(final int payloadUploadRate)
+    public void setPayloadUploadRate(final int payloadUploadRate)
         {
         m_payloadUploadRate = payloadUploadRate;
         }
@@ -411,7 +413,7 @@ public class JLibTorrent
         return m_payloadUploadRate;
         }
 
-    private void setPayloadDownloadRate(final int payloadDownloadRate)
+    public void setPayloadDownloadRate(final int payloadDownloadRate)
         {
         m_payloadDownloadRate = payloadDownloadRate;
         }
@@ -421,7 +423,7 @@ public class JLibTorrent
         return m_payloadDownloadRate;
         }
 
-    private void setTotalPayloadUploadBytes(long totalPayloadUploadBytes)
+    public void setTotalPayloadUploadBytes(final long totalPayloadUploadBytes)
         {
         m_totalPayloadUploadBytes = totalPayloadUploadBytes;
         }
@@ -431,7 +433,7 @@ public class JLibTorrent
         return m_totalPayloadUploadBytes;
         }
 
-    private void setTotalPayloadDownloadBytes(final long totalPayloadDownloadBytes)
+    public void setTotalPayloadDownloadBytes(final long totalPayloadDownloadBytes)
         {
         m_totalPayloadDownloadBytes = totalPayloadDownloadBytes;
         }
