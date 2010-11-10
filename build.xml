@@ -41,7 +41,7 @@
         <condition property="isMac">
             <os family="mac"/>
         </condition>
-        <condition property="isWindows">
+        <condition property="isWin">
             <os family="windows"/>
         </condition>
     </target>
