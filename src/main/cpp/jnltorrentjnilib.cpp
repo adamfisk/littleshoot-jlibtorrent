@@ -864,13 +864,13 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_
 ) {return intCall(env, arg, &numPeersFunc);}
 
 
-float speedFunc(const char* torrentPath)
+int speedFunc(const char* torrentPath)
 {    
     return session::instance().status(torrentPath).download_payload_rate;
 }
-JNIEXPORT jdouble JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1torrent(
+JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1torrent(
     JNIEnv * env, jobject obj, jstring arg
-) {return floatCall(env, arg, &speedFunc);}
+) {return intCall(env, arg, &speedFunc);}
 
 
 void moveToDownloadsDirFunc(const char* torrentPath, const char* downloadsDir) {
@@ -1051,6 +1051,7 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_cacheMethodIds
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_update_1session_1status
 (JNIEnv * env, jobject obj) {
     const libtorrent::session_status stat = session::instance().session_status();
+
     env->CallVoidMethod(obj, m_sessionStatusTotalUpload, stat.total_upload);
     env->CallVoidMethod(obj, m_sessionStatusTotalDownload, stat.total_download);
     env->CallVoidMethod(obj, m_sessionStatusTotalPayloadUpload, stat.total_payload_upload);
@@ -1069,15 +1070,14 @@ JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_check_1alerts
 	const boost::shared_ptr<libtorrent::session> ses = session::instance().get_session();
 	
 	if (!ses.get()) {
+		cout << "No alerts" << endl;
 		return;
 	}
 	
 	std::auto_ptr<libtorrent::alert> a = ses.get()->pop_alert();
-	
 	while (a.get()) {
 		if (libtorrent::tracker_announce_alert * p = dynamic_cast<
 			libtorrent::tracker_announce_alert *>(a.get())) {
-			std::cout << "Tracker announce:" << a->message() << std::endl;
 			if (p->handle.is_valid()) {
 				std::cout << "Tracker_announce_alert: " << p->message() << std::endl;
 			}
