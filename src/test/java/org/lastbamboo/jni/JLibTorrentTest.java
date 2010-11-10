@@ -38,7 +38,11 @@ public class JLibTorrentTest
         final String fullPath = fullFile.getCanonicalPath();
         final JLibTorrent torrent = 
             new JLibTorrent(fullPath, CommonUtils.isPro());
+        Thread.sleep(4000);
+        torrent.updateSessionStatus();
         
+        Thread.sleep(10000);
+        /*
         final String uri = "http://stealthisfilm.com/torrent/StealThisFilmII.iPod.torrent";
         final File savePath = new File(".").getCanonicalFile();
         final File torrentFile = downloadTorrentFile(uri);
@@ -54,6 +58,7 @@ public class JLibTorrentTest
             Thread.sleep(100);
             }
 
+    */
         System.out.println("Stopping torrent...");
         torrent.stopLibTorrent();
         }

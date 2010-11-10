@@ -69,8 +69,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalOptions>/D BOOST_ALL_NO_LIB %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>../../../npapi\mozilla\nsprpub\pr\include\obsolete;../../../npapi\mozilla\nsprpub\pr\src\md\mac;../../../npapi\mozilla\nsprpub\pr\include;../../../libtorrent\libtorrent\include;c:\boost;../../../libtorrent\libtorrent\zlib;../../../npapi\mozilla\sun-java\stubs\include;../../../jni\jlibtorrent\build\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TORRENT_DISABLE_GEO_IP;TORRENT_DISABLE_RESOLVE_COUNTRIES;WIN32;NDEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../npapi\mozilla\nsprpub\pr\include\obsolete;../../../npapi\mozilla\nsprpub\pr\src\md\mac;../../../npapi\mozilla\nsprpub\pr\include;../../../libtorrent\libtorrent\include;c:\boost;../../../libtorrent\libtorrent\zlib;../../../npapi\mozilla\sun-java\stubs\include;..\..\..\jni\jlibtorrent\build\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;TORRENT_DISABLE_DHT;TORRENT_DISABLE_GEO_IP;TORRENT_DISABLE_RESOLVE_COUNTRIES;WIN32;NDEBUG;_WINDOWS;_USRDLL;JLIBTORRENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
