@@ -12,3 +12,5 @@ javah -verbose -classpath ./target/classes -force -d src/main/cpp org.lastbamboo
 xcodebuild -project jlibtorrent.xcodeproj -target JNILib || die "Could not build xcode!!"
 
 cp ./build/Release/libjnltorrent.jnilib ../../lib || die "Could not copy ./build/Release/libjnltorrent.jnilib??"
+
+echo "ALL JNI BUILD PROCESSES SUCCEEDED"
