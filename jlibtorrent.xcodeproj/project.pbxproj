@@ -231,7 +231,7 @@
 				GCC_VERSION = "";
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(JAVA_5_JNI_PATH)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					"\"$(SRCROOT)/../../boost/boost\"",
 					"\"$(SRCROOT)/../../libtorrent/libtorrent/include\"",
@@ -240,8 +240,9 @@
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"${OBJROOT}/Headers\"";
 				HEADER_SEARCH_PATHS_QUOTED_2 = "\"$(SYSTEM_LIBRARY_DIR)/Frameworks/JavaVM.framework/Headers\"";
 				HEADER_SEARCH_PATHS_QUOTED_3 = "\"/System/Library/Frameworks/JavaVM.framework/Headers\"/**";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "\"${TARGET_BUILD_DIR}/Headers\"/**";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "\"src/main/cpp\"/**";
 				INSTALL_PATH = /usr/local/lib;
+				JAVA_5_JNI_PATH = /Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Headers;
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../openssl/openssl-0.9.8j/build\"",
 					"$(inherited)",
