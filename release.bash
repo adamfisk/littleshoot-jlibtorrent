@@ -6,7 +6,8 @@ function die()
   exit 1
 }
 
-mvn install -Dmaven.test.skip=true || die "Could not build JNI lib"
+#mvn install -Dmaven.test.skip=true || die "Could not build JNI lib"
+./build.bash || die "Could not build JNI"
 cd ../../lib || die "Could not cd"
 rm jnl.tgz 
 
