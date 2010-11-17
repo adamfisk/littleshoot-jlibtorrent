@@ -13,4 +13,7 @@ xcodebuild -project jlibtorrent.xcodeproj -target JNILib || die "Could not build
 
 cp ./build/Release/libjnltorrent.jnilib ../../lib || die "Could not copy ./build/Release/libjnltorrent.jnilib??"
 
-echo "ALL JNI BUILD PROCESSES SUCCEEDED"
+echo ""
+echo "******** ALL JNI BUILD PROCESSES SUCCEEDED ********"
+echo ""
+echo ""
