@@ -846,8 +846,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1files_1for_
 ) {return intCall(env, arg, &numFilesFunc);}
 
 
-boost::int64_t bytesReadFunc(const char* torrentPath)
-{    
+boost::int64_t bytesReadFunc(const char* torrentPath) {    
     return session::instance().status(torrentPath).total_wanted_done; 
 }
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1for_1torrent(
@@ -855,8 +854,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1bytes_1read_1fo
 ) {return longCall(env, arg, &bytesReadFunc);}
 
 
-int numPeersFunc(const char* torrentPath)
-{    
+int numPeersFunc(const char* torrentPath) {    
     return session::instance().status(torrentPath).num_peers;
 }
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_1torrent(
@@ -864,8 +862,7 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1num_1peers_1for_
 ) {return intCall(env, arg, &numPeersFunc);}
 
 
-int speedFunc(const char* torrentPath)
-{    
+int speedFunc(const char* torrentPath) {    
     return session::instance().status(torrentPath).download_payload_rate;
 }
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1speed_1for_1torrent(
