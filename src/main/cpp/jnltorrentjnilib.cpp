@@ -57,6 +57,18 @@ using namespace std;
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
+inline const char * const BoolToString(bool b) {
+	return b ? "true" : "false";
+}
+
+inline const bool JBooleanToBool(jboolean b) {
+    return ((b) == JNI_TRUE) ? true : false;
+}
+
+inline const char * const JBooleanToString(jboolean b) {
+    return BoolToString(JBooleanToBool(b));
+}
+
 
 typedef std::map<
     const std::string, const libtorrent::torrent_handle
@@ -556,6 +568,24 @@ jmethodID m_portMapLogAlert;
 jmethodID m_log;
 jmethodID m_logError;
 
+void log_error(JNIEnv * env, jobject obj, const char* error) {
+	jstring msg = env->NewStringUTF(error);
+	env->CallVoidMethod(obj, m_logError, msg);
+	env->DeleteLocalRef(msg);
+}
+
+void log(JNIEnv * env, jobject obj, const char* info) {
+	jstring msg = env->NewStringUTF(info);
+	env->CallVoidMethod(obj, m_log, msg);
+	env->DeleteLocalRef(msg);
+}
+
+void log(JNIEnv * env, jobject obj, const std::string& info) {
+	jstring msg = env->NewStringUTF(info.c_str());
+	env->CallVoidMethod(obj, m_log, msg);
+	env->DeleteLocalRef(msg);
+}
+
 void voidCall(const char* torrentPath, void (*pt2Func)(const char *)) {
     try { 
         pt2Func(torrentPath);
@@ -755,8 +785,10 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
     ) {
     const char * incompleteDir = env->GetStringUTFChars(jIncompleteDir, JNI_FALSE);
     const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
-    cout << "Downloading to dir:" << incompleteDir << endl;
-	cout << "Got download call from Java for path:" << torrentPath << endl;
+	
+	log(env, obj, "Downloading to dir:" + std::string(incompleteDir));
+	log(env, obj, "Got download call from Java for path:" + std::string(torrentPath));
+    log(env, obj, "Sequential: " + std::string(JBooleanToString(sequential)));
     if (!incompleteDir) {
 		cerr << "Out of memory!!" << endl;
 		return -1; // OutOfMemoryError already thrown
@@ -774,7 +806,7 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
         cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
 #endif
     }
-    cout << "Finished download_torrent call" << endl;
+    log(env, obj, "Finished download_torrent call");
 	env->ReleaseStringUTFChars(arg, torrentPath);
 	env->ReleaseStringUTFChars(arg, incompleteDir);
 	return 0;
@@ -976,17 +1008,6 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1natpmp_1map
 (JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
 {return map_natpmp_port(libtorrent::natpmp::udp, internalPort, externalPort);}
 
-void log_error(JNIEnv * env, jobject obj, const char* error) {
-	jstring msg = env->NewStringUTF(error);
-	env->CallVoidMethod(obj, m_logError, msg);
-	env->DeleteLocalRef(msg);
-}
-
-void log(JNIEnv * env, jobject obj, const char* info) {
-	jstring msg = env->NewStringUTF(info);
-	env->CallVoidMethod(obj, m_log, msg);
-	env->DeleteLocalRef(msg);
-}
 
 void checkMethodId(const jmethodID field) {
     if (field == NULL) {
