@@ -53,7 +53,7 @@ using namespace std;
 #else
     #define log_debug(s) /* */
 #endif
-
+ 
 #define jlong_to_ptr(a) ((void *)(uintptr_t)(a))
 #define ptr_to_jlong(a) ((jlong)(uintptr_t)(a))
 
@@ -67,6 +67,46 @@ inline const bool JBooleanToBool(jboolean b) {
 
 inline const char * const JBooleanToString(jboolean b) {
     return BoolToString(JBooleanToBool(b));
+}
+
+std::string int_to_str(const int &arg) {
+	// The largest 32-bit integer is 4294967295, that is 10 chars
+	// On the safe side, add 1 for sign, and 1 for trailing zero
+	char buffer[12] ;
+	sprintf(buffer, "%i", arg) ;
+	return buffer ;
+}
+
+jmethodID m_sessionStatusTotalUpload;
+jmethodID m_sessionStatusTotalDownload;
+jmethodID m_sessionStatusTotalPayloadUpload;
+jmethodID m_sessionStatusTotalPayloadDownload;
+jmethodID m_sessionStatusUploadRate;
+jmethodID m_sessionStatusDownloadRate;
+jmethodID m_sessionStatusPayloadUploadRate;
+jmethodID m_sessionStatusPayloadDownloadRate;
+jmethodID m_sessionStatusNumPeers;
+jmethodID m_portMapAlert;
+jmethodID m_portMapLogAlert;
+jmethodID m_log;
+jmethodID m_logError;
+
+void log_error(JNIEnv * env, jobject obj, const char* error) {
+	jstring msg = env->NewStringUTF(error);
+	env->CallVoidMethod(obj, m_logError, msg);
+	env->DeleteLocalRef(msg);
+}
+
+void log(JNIEnv * env, jobject obj, const char* info) {
+	jstring msg = env->NewStringUTF(info);
+	env->CallVoidMethod(obj, m_log, msg);
+	env->DeleteLocalRef(msg);
+}
+
+void log(JNIEnv * env, jobject obj, const std::string& info) {
+	jstring msg = env->NewStringUTF(info.c_str());
+	env->CallVoidMethod(obj, m_log, msg);
+	env->DeleteLocalRef(msg);
 }
 
 
@@ -361,23 +401,24 @@ class session : private boost::noncopyable {
             return torrent_handle();
         }
 	
-		const long get_index_for_torrent(const char* torrentPath) {
+		const long get_index_for_torrent(JNIEnv * env, const jobject& obj, 
+										 const char* torrentPath) {
 			using namespace libtorrent;
             const torrent_handle th = handle(torrentPath);
             if (!th.has_metadata())  {
-                log_debug("No metadata for torrent");
+                log(env, obj, "No metadata for torrent");
                 return -1;
             }
             if (!th.is_valid()) {
-                log_debug("Torrent not valid"); 
+				log(env, obj, "Torrent not valid");
                 return -1;
             }
             
             const torrent_status status = th.status();
-            log_debug("Download rate: " << status.download_rate);
+            //log_debug("Download rate: " << status.download_rate);
             const torrent_info ti = th.get_torrent_info();
             if (is_finished(status)) {
-                log_debug("File is finished!!!");
+                log(env, obj, "File is finished!!!");
                 return ti.total_size();
             }
             
@@ -387,35 +428,37 @@ class session : private boost::noncopyable {
             const InfoHashToIndexMap::iterator iter = m_piece_to_index_map.find(sha1);
             if (iter != m_piece_to_index_map.end()) {
                 index = iter->second;
-                log_debug("Found existing index: " << index);
-                //return index;
+                //log(env, obj, "Found existing index: " + int_to_str(index));
             }
             else {
-                log_debug("No existing torrent");
+                //log(env, obj, "No existing torrent");
                 m_piece_to_index_map.insert(InfoHashToIndexMap::value_type(sha1, 0));
                 return -1;
             }
             const unsigned int numPieces = status.pieces.size();
             //cout << "Num pieces is: " << numPieces << endl;
             for (unsigned int j = index; j < numPieces; j++) {
+				// pieces is a bit vector, so this operation is quite cheap.
+				// The logic here is to check if we have a given piece. If we
+				// do, then we keep looping, incrementing the maximum piece 
+				// we have.
                 if (status.pieces[j]) {
-                    log_debug("Found piece at index: " << j);
+                    //log(env, obj, "Found piece at index: " + int_to_str(j));
                     // We have this piece -- stream it.
                 } else {
                     // We do not have this piece -- set the index and
                     // break.
-                    log_debug("Setting index to: " << j);
+                    //log(env, obj, "Setting index to: " + int_to_str(j));
                     m_piece_to_index_map[sha1] = j;
                     
-                    log_debug("index: " << j);
-                    //log_debug("piece length is: " << ti.piece_length());
-                    //log_debug("num pieces is: " << ti.num_pieces());
+                    //log(env, obj, "index: " + int_to_str(j));
                     
                     const unsigned long maxByte = j * ti.piece_length();
-                    log_debug("max byte is: " << maxByte);
+                    //log(env, obj, "max byte is: " + int_to_str(maxByte));
                     return maxByte;
                 }
             }
+			//log(env, obj, "Returning index * piece length");
             return index * ti.piece_length();
 		}
 	
@@ -553,38 +596,6 @@ class session : private boost::noncopyable {
         static const int PausedState = 200;
         int m_upload_rate_limit;
 };
-
-jmethodID m_sessionStatusTotalUpload;
-jmethodID m_sessionStatusTotalDownload;
-jmethodID m_sessionStatusTotalPayloadUpload;
-jmethodID m_sessionStatusTotalPayloadDownload;
-jmethodID m_sessionStatusUploadRate;
-jmethodID m_sessionStatusDownloadRate;
-jmethodID m_sessionStatusPayloadUploadRate;
-jmethodID m_sessionStatusPayloadDownloadRate;
-jmethodID m_sessionStatusNumPeers;
-jmethodID m_portMapAlert;
-jmethodID m_portMapLogAlert;
-jmethodID m_log;
-jmethodID m_logError;
-
-void log_error(JNIEnv * env, jobject obj, const char* error) {
-	jstring msg = env->NewStringUTF(error);
-	env->CallVoidMethod(obj, m_logError, msg);
-	env->DeleteLocalRef(msg);
-}
-
-void log(JNIEnv * env, jobject obj, const char* info) {
-	jstring msg = env->NewStringUTF(info);
-	env->CallVoidMethod(obj, m_log, msg);
-	env->DeleteLocalRef(msg);
-}
-
-void log(JNIEnv * env, jobject obj, const std::string& info) {
-	jstring msg = env->NewStringUTF(info.c_str());
-	env->CallVoidMethod(obj, m_log, msg);
-	env->DeleteLocalRef(msg);
-}
 
 void voidCall(const char* torrentPath, void (*pt2Func)(const char *)) {
     try { 
@@ -811,14 +822,24 @@ JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1torrent(
 	env->ReleaseStringUTFChars(arg, incompleteDir);
 	return 0;
 }
-
-boost::int64_t indexFunc(const char* torrentPath) {    
-    return session::instance().get_index_for_torrent(torrentPath);
-}
     
 JNIEXPORT jlong JNICALL Java_org_lastbamboo_jni_JLibTorrent_get_1max_1byte_1for_1torrent(
 	JNIEnv * env, jobject obj, jstring arg
-) {return longCall(env, arg, &indexFunc);}
+) {
+	LS_TRY_BEGIN;
+
+	const char * torrentPath  = env->GetStringUTFChars(arg, JNI_FALSE);
+    if (!torrentPath) {
+		cerr << "Out of memory!!" << endl;
+		return -1; // OutOfMemoryError already thrown 
+	}
+	env->ReleaseStringUTFChars(arg, torrentPath);
+	
+	return session::instance().get_index_for_torrent(env, obj, torrentPath);
+	LS_TRY_END;
+	
+	return -1;
+}
  
 
 string const nameFunc(const char* torrentPath) {
