@@ -15,8 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Java wrapper class for calls to native lib torrent.
  */
-public class JLibTorrent
-    {
+public class JLibTorrent {
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     private long m_totalUploadBytes;
@@ -30,244 +29,230 @@ public class JLibTorrent
     private int m_numPeers;
     private final boolean m_isPro;
     private final File m_dataDir = CommonUtils.getLittleShootDir();
+    private boolean m_libLoaded;
+    
+    private final Map<Integer, PortMappingListener> m_mappingIdsToListeners = 
+        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMappingListener>() {
+            private static final long serialVersionUID = 748372975L;
 
-    public JLibTorrent(final Collection<File> libFiles, final boolean isPro)
-        {
+            @Override
+            protected boolean removeEldestEntry(
+                    final Map.Entry<Integer, PortMappingListener> eldest) {
+                // This makes the map automatically purge the least used
+                // entry.
+                final boolean remove = size() > 200;
+                return remove;
+            }
+        });
+
+    private volatile boolean m_stopped;
+
+    public JLibTorrent(final Collection<File> libFiles, final boolean isPro) {
         this.m_isPro = isPro;
-        boolean libLoaded = false;
-        for (final File lib : libFiles)
-            {
-            if (lib.isFile())
-                {
-                m_log.info("Loading: "+lib);
-                System.load(lib.getAbsolutePath());
-                libLoaded = true;
-                m_log.info("Loaded: "+lib);
-                break;
+        this.m_libLoaded = false;
+        try {
+            for (final File lib : libFiles) {
+                if (lib.isFile()) {
+                    m_log.info("Loading: " + lib);
+                    System.load(lib.getAbsolutePath());
+                    m_libLoaded = true;
+                    m_log.info("Loaded: " + lib);
+                    break;
                 }
             }
-        if (!libLoaded)
-            {
-            System.loadLibrary("jnltorrent");
+            if (!m_libLoaded) {
+                System.loadLibrary("jnltorrent");
+                m_libLoaded = true;
             }
-        init();
+            init();
+        } catch (final Throwable t) {
+            // We might be running LittleShoot in embedded mode without all
+            // the bells and whistles. Just log this and ignore.
+            m_log.warn("Could not load LibTorrent library!", t);
+            m_libLoaded = false;
         }
-    
-    public JLibTorrent(final boolean isPro)
-        {
+    }
+
+    public JLibTorrent(final boolean isPro) {
         this.m_isPro = isPro;
         System.loadLibrary("jnltorrent");
         init();
-        }
-    
-    public JLibTorrent(final String libraryPath, final boolean isPro)
-        {
+    }
+
+    public JLibTorrent(final String libraryPath, final boolean isPro) {
         this.m_isPro = isPro;
         System.load(libraryPath);
         init();
-        }
-    
-    private void init()
-        {
+    }
+
+    private void init() {
         cacheMethodIds();
         start(this.m_isPro, normalizePath(this.m_dataDir));
         checkAlerts();
-        }
-    
+    }
+
     /**
      * Shuts down the libtorrent core.
      */
-    public void stopLibTorrent() 
-        {
+    public void stopLibTorrent() {
+        if (!this.m_libLoaded || this.m_stopped) return;
         m_stopped = true;
         stop();
-        }
-    
-    public void updateSessionStatus() 
-        {
-        if (this.m_stopped) return;
-        update_session_status();
-        }
-    
-    public void download(final File incompleteDir, final File torrentFile, 
-        final boolean sequential, final int torrentState) throws IOException 
-        {
-        add_torrent(incompleteDir.getCanonicalPath(), 
-            torrentFile.getCanonicalPath(), (int) torrentFile.length(), 
-            sequential, torrentState);
-        }
+    }
 
-    public void rename(final File torrentFile, final String newName)
-        {
+    public void updateSessionStatus() {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        update_session_status();
+    }
+
+    public void download(final File incompleteDir, final File torrentFile,
+        final boolean sequential, final int torrentState)
+        throws IOException {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        add_torrent(incompleteDir.getCanonicalPath(),
+            torrentFile.getCanonicalPath(), (int) torrentFile.length(),
+            sequential, torrentState);
+    }
+
+    public void rename(final File torrentFile, final String newName) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         rename(path, newName);
-        }
-    
-    public void moveToDownloadsDir(final File torrentFile, 
-        final File downloadsDir)
-        {
+    }
+
+    public void moveToDownloadsDir(final File torrentFile,
+        final File downloadsDir) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         final String downloadsDirPath = normalizePath(downloadsDir);
         move_to_downloads_dir(path, downloadsDirPath);
-        }
+    }
 
-    public long getMaxByteForTorrent(final File torrentFile)
-        {
-        if (this.m_stopped) return -1L;
+    public long getMaxByteForTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return -1L;
         final String path = normalizePath(torrentFile);
         return get_max_byte_for_torrent(path);
-        }
-    
-    public void pauseTorrent(final File torrentFile)
-        {
+    }
+
+    public void pauseTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         pause_torrent(path);
-        }
-    
-    public void resumeTorrent(final File torrentFile)
-        {
+    }
+
+    public void resumeTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         resume_torrent(path);
-        }
+    }
 
     /**
-     * Performs a "hard" resume of a torrent.  This is necessary when starting
-     * torrents from previous sessions that were paused in the previous 
-     * session.  The usual resume scenario doesn't appear to work in this 
-     * case because simply setting a torrent to auto_managed that was never
-     * started out of the pause state in the first place appears to have no 
-     * effect.
+     * Performs a "hard" resume of a torrent. This is necessary when starting
+     * torrents from previous sessions that were paused in the previous session.
+     * The usual resume scenario doesn't appear to work in this case because
+     * simply setting a torrent to auto_managed that was never started out of
+     * the pause state in the first place appears to have no effect.
      * 
      * @param torrentFile The torrent file.
      */
-    public void hardResumeTorrent(final File torrentFile)
-        {
+    public void hardResumeTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         m_log.info("Performing hard resume");
         final String path = normalizePath(torrentFile);
         hard_resume_torrent(path);
-        }
-    
-    public long getSizeForTorrent(final File torrentFile)
-        {
+    }
+
+    public long getSizeForTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return 0L;
         final String path = normalizePath(torrentFile);
         return get_size_for_torrent(path);
-        }
-    
+    }
 
-    public void removeTorrent(final File torrentFile)
-        {
+    public void removeTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         remove_torrent(path);
-        }
-    
-    public void removeTorrentAndFiles(final File torrentFile)
-        {
+    }
+
+    public void removeTorrentAndFiles(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final String path = normalizePath(torrentFile);
         remove_torrent_and_files(path);
-        }
-    
-    public int getStateForTorrent(final File torrentFile)
-        {
-        if (this.m_stopped) return -1;
+    }
+
+    public int getStateForTorrent(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return -1;
         final String path = normalizePath(torrentFile);
         return get_state_for_torrent(path);
-        }
-    
-    public String getName(final File torrentFile)
-        {
+    }
+
+    public String getName(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return torrentFile.getName();
         final String path = normalizePath(torrentFile);
         return get_name_for_torrent(path);
-        }
-    
-    public int getNumFiles(final File torrentFile)
-        {
+    }
+
+    public int getNumFiles(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return 0;
         final String path = normalizePath(torrentFile);
         return get_num_files_for_torrent(path);
-        }
+    }
 
-    public int getDownloadSpeed(final File torrentFile)
-        {
+    public int getDownloadSpeed(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return 0;
         final String path = normalizePath(torrentFile);
         return get_speed_for_torrent(path);
-        }
-    
-    public int getNumHosts(final File torrentFile)
-        {
+    }
+
+    public int getNumHosts(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return 0;
         final String path = normalizePath(torrentFile);
         return get_num_peers_for_torrent(path);
-        }
-    
-    public long getBytesRead(final File torrentFile)
-        {
+    }
+
+    public long getBytesRead(final File torrentFile) {
+        if (!this.m_libLoaded || this.m_stopped) return 0L;
         final String path = normalizePath(torrentFile);
         return get_bytes_read_for_torrent(path);
-        }
-    
-    public void setMaxUploadSpeed(final int bytesPerSecond)
-        {
-        set_max_upload_speed(bytesPerSecond);
-        }
-    
-    private native void set_max_upload_speed(final int bytesPerSecond);
-    
-    private final Map<Integer, PortMappingListener> m_mappingIdsToListeners =
-        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMappingListener>()
-            {
-            private static final long serialVersionUID = 748372975L;
-            @Override
-            protected boolean removeEldestEntry(
-                final Map.Entry<Integer, PortMappingListener> eldest)
-                {
-                // This makes the map automatically purge the least used
-                // entry.  
-                final boolean remove = size() > 200;
-                return remove;
-                }
-            });
-    
-    private volatile boolean m_stopped;
+    }
 
-        
+    public void setMaxUploadSpeed(final int bytesPerSecond) {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        set_max_upload_speed(bytesPerSecond);
+    }
+
     public void addTcpUpnpPortMapping(final PortMappingListener listener,
-        final int internalPort, final int externalPort)
-        {
+            final int internalPort, final int externalPort) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final int mappingId = add_tcp_upnp_mapping(internalPort, externalPort);
         m_mappingIdsToListeners.put(mappingId, listener);
-        }
-        
+    }
+
     public void addUdpUpnpPortMapping(final PortMappingListener listener,
-        final int internalPort, final int externalPort)
-        {
+            final int internalPort, final int externalPort) {
+        if (!this.m_libLoaded || this.m_stopped) return;
         final int mappingId = add_udp_upnp_mapping(internalPort, externalPort);
         m_mappingIdsToListeners.put(mappingId, listener);
-        }
-        
+    }
+
     public void addTcpNapPmpPortMapping(final PortMappingListener listener,
-        final int internalPort, final int externalPort)
-        {
-        final int mappingId = 
-            add_tcp_natpmp_mapping(internalPort, externalPort);
+            final int internalPort, final int externalPort) {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        final int mappingId = add_tcp_natpmp_mapping(internalPort, externalPort);
         m_mappingIdsToListeners.put(mappingId, listener);
-        }
-        
+    }
+
     public void addUdpNatPmpPortMapping(final PortMappingListener listener,
-        final int internalPort, final int externalPort)
-        {
-        final int mappingId = 
-            add_udp_natpmp_mapping(internalPort, externalPort);
+            final int internalPort, final int externalPort) {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        final int mappingId = add_udp_natpmp_mapping(internalPort, externalPort);
         m_mappingIdsToListeners.put(mappingId, listener);
-        }
+    }
     
-    
-    private native int add_tcp_upnp_mapping(final int internalPort, final int externalPort);
-    private native int add_udp_upnp_mapping(final int internalPort, final int externalPort);
-    private native int add_tcp_natpmp_mapping(final int internalPort, final int externalPort);
-    private native int add_udp_natpmp_mapping(final int internalPort, final int externalPort);
-    
-    public void checkAlerts() 
-        {
-        final Runnable runner = new Runnable()
-            {
+    public void checkAlerts() {
+        if (!this.m_libLoaded || this.m_stopped) return;
+        // TODO: Use a global Timer instead?
+        final Runnable runner = new Runnable() {
 
             public void run() {
                 while (!m_stopped) {
@@ -281,25 +266,27 @@ public class JLibTorrent
                     check_alerts();
                 }
             }
-            };
-            final Thread t = new Thread(runner);
-            t.setDaemon(true);
-            t.start();
+        };
+        final Thread t = new Thread(runner);
+        t.setDaemon(true);
+        t.start();
+    }
+    
+    private final String normalizePath(final File torrentFile) {
+        try {
+            return torrentFile.getCanonicalPath();
+        } catch (final IOException e) {
+            return torrentFile.getAbsolutePath();
         }
+    }
+    
+    private native void set_max_upload_speed(final int bytesPerSecond);
+    private native int add_tcp_upnp_mapping(final int internalPort, final int externalPort);
+    private native int add_udp_upnp_mapping(final int internalPort, final int externalPort);
+    private native int add_tcp_natpmp_mapping(final int internalPort, final int externalPort);
+    private native int add_udp_natpmp_mapping(final int internalPort, final int externalPort);
     
     private native void check_alerts();
-    
-    private final String normalizePath(final File torrentFile)
-        {
-        try
-            {
-            return torrentFile.getCanonicalPath();
-            }
-        catch (final IOException e)
-            {
-            return torrentFile.getAbsolutePath();
-            }
-        }
     
     private native void cacheMethodIds();
     
