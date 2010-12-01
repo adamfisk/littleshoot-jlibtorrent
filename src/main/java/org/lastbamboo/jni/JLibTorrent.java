@@ -225,6 +225,7 @@ public class JLibTorrent {
             final int internalPort, final int externalPort) {
         if (!this.m_libLoaded || this.m_stopped) return;
         final int mappingId = add_tcp_upnp_mapping(internalPort, externalPort);
+        m_log.info("Adding port mapping ID: {}", mappingId);
         m_mappingIdsToListeners.put(mappingId, listener);
     }
 
@@ -232,6 +233,7 @@ public class JLibTorrent {
             final int internalPort, final int externalPort) {
         if (!this.m_libLoaded || this.m_stopped) return;
         final int mappingId = add_udp_upnp_mapping(internalPort, externalPort);
+        m_log.info("Adding port mapping ID: {}", mappingId);
         m_mappingIdsToListeners.put(mappingId, listener);
     }
 
