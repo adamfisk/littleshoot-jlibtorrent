@@ -339,128 +339,107 @@ public class JLibTorrent {
     private native long add_torrent(String incompletePath, String torrentPath, 
         int size, boolean sequential, int torrentState);
 
-    public void setTotalUploadBytes(final long totalUploadBytes)
-        {
+    public void setTotalUploadBytes(final long totalUploadBytes) {
         m_totalUploadBytes = totalUploadBytes;
-        }
+    }
 
-    public long getTotalUploadBytes()
-        {
+    public long getTotalUploadBytes() {
         return m_totalUploadBytes;
-        }
+    }
 
-    public void setTotalDownloadBytes(final long totalDownloadBytes)
-        {
-        //m_log.info("Setting total download bytes to: {}", totalDownloadBytes);
+    public void setTotalDownloadBytes(final long totalDownloadBytes) {
+        // m_log.info("Setting total download bytes to: {}",
+        // totalDownloadBytes);
         m_totalDownloadBytes = totalDownloadBytes;
-        }
+    }
 
-    public long getTotalDownloadBytes()
-        {
+    public long getTotalDownloadBytes() {
         return m_totalDownloadBytes;
-        }
+    }
 
-    public void setDownloadRate(final int downloadRate)
-        {
-        //m_log.info("Setting download rate to: {}", downloadRate);
+    public void setDownloadRate(final int downloadRate) {
+        // m_log.info("Setting download rate to: {}", downloadRate);
         m_downloadRate = downloadRate;
-        }
+    }
 
-    public int getDownloadRate()
-        {
+    public int getDownloadRate() {
         return m_downloadRate;
-        }
+    }
 
-    public void setUploadRate(final int uploadRate)
-        {
-        //m_log.info("Setting upload rate to: {}", uploadRate);
+    public void setUploadRate(final int uploadRate) {
+        // m_log.info("Setting upload rate to: {}", uploadRate);
         m_uploadRate = uploadRate;
-        }
+    }
 
-    public int getUploadRate()
-        {
+    public int getUploadRate() {
         return m_uploadRate;
-        }
+    }
 
-    public void setNumPeers(int numPeers)
-        {
+    public void setNumPeers(int numPeers) {
         m_numPeers = numPeers;
-        }
+    }
 
-    public int getNumPeers()
-        {
+    public int getNumPeers() {
         return m_numPeers;
-        }
+    }
 
-    public void setPayloadUploadRate(final int payloadUploadRate)
-        {
+    public void setPayloadUploadRate(final int payloadUploadRate) {
         m_payloadUploadRate = payloadUploadRate;
-        }
+    }
 
-    public int getPayloadUploadRate()
-        {
+    public int getPayloadUploadRate() {
         return m_payloadUploadRate;
-        }
+    }
 
-    public void setPayloadDownloadRate(final int payloadDownloadRate)
-        {
+    public void setPayloadDownloadRate(final int payloadDownloadRate) {
         m_payloadDownloadRate = payloadDownloadRate;
-        }
+    }
 
-    public int getPayloadDownloadRate()
-        {
+    public int getPayloadDownloadRate() {
         return m_payloadDownloadRate;
-        }
+    }
 
-    public void setTotalPayloadUploadBytes(final long totalPayloadUploadBytes)
-        {
+    public void setTotalPayloadUploadBytes(final long totalPayloadUploadBytes) {
         m_totalPayloadUploadBytes = totalPayloadUploadBytes;
-        }
+    }
 
-    public long getTotalPayloadUploadBytes()
-        {
+    public long getTotalPayloadUploadBytes() {
         return m_totalPayloadUploadBytes;
-        }
+    }
 
-    public void setTotalPayloadDownloadBytes(final long totalPayloadDownloadBytes)
-        {
+    public void setTotalPayloadDownloadBytes(
+            final long totalPayloadDownloadBytes) {
         m_totalPayloadDownloadBytes = totalPayloadDownloadBytes;
-        }
+    }
 
-    public long getTotalPayloadDownloadBytes()
-        {
+    public long getTotalPayloadDownloadBytes() {
         return m_totalPayloadDownloadBytes;
-        }
-    
-    public void portMapAlert(final int mappingId, final int externalPort, 
-        final int type) 
-        {
-        m_log.info("GOT PORT MAPPED!! ID: "+mappingId+
-            " EXTERNAL PORT: "+externalPort);
-        
+    }
+
+    public void portMapAlert(final int mappingId, final int externalPort,
+        final int type) {
+        m_log.info("GOT PORT MAPPED!! ID: " + mappingId + " EXTERNAL PORT: "
+                + externalPort);
+
         final PortMappingListener listener = 
             this.m_mappingIdsToListeners.get(mappingId);
-        
-        if (listener == null)
-            {
-            m_log.error("No listener for ID!! "+mappingId);
-            return;
-            }
-        listener.externalPortMapped(externalPort);
-        }
-    
-    public void portMapLogAlert(final int type, final String message) 
-        {
-        m_log.info("Port map log for type {}: "+message, type);
-        }
 
-    public void log(final String msg) 
-        {
-        m_log.info("From native code: {}", msg);
+        if (listener == null) {
+            m_log.error("No listener for ID!! " + mappingId);
+            return;
         }
-    
-    public void logError(final String msg) 
-        {
-        m_log.error("From native code: {}", msg);
-        }
+        listener.externalPortMapped(externalPort);
     }
+
+    public void portMapLogAlert(final int type, final String message) {
+        m_log.info("Port map log for type {}: " + message, type);
+    }
+
+    public void log(final String msg) {
+        m_log.info("From native code: {}", msg);
+    }
+
+    public void logError(final String msg) {
+        m_log.error("From native code: {}", msg);
+    }
+}
