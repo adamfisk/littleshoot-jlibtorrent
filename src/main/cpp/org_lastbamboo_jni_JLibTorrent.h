@@ -49,6 +49,22 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1natpmp_1map
 
 /*
  * Class:     org_lastbamboo_jni_JLibTorrent
+ * Method:    delete_natpmp_mapping
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1natpmp_1mapping
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_lastbamboo_jni_JLibTorrent
+ * Method:    delete_upnp_mapping
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1upnp_1mapping
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     org_lastbamboo_jni_JLibTorrent
  * Method:    check_alerts
  * Signature: ()V
  */

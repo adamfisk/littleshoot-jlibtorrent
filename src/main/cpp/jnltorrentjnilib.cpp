@@ -1030,6 +1030,15 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1natpmp_1map
 {return map_natpmp_port(libtorrent::natpmp::udp, internalPort, externalPort);}
 
 
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1natpmp_1mapping
+(JNIEnv * env, jobject obj, jint mappingIndex) 
+{session::instance().get_natpmp()->delete_mapping(mappingIndex);}
+
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1upnp_1mapping
+(JNIEnv * env, jobject obj, jint mappingIndex)
+{session::instance().get_upnp()->delete_mapping(mappingIndex);}
+
+
 void checkMethodId(const jmethodID field) {
     if (field == NULL) {
         cerr << "Missing method ID" << endl;

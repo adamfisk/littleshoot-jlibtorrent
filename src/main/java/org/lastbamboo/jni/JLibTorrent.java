@@ -354,8 +354,8 @@ public class JLibTorrent implements NatPmpService, UpnpService {
     private native int add_tcp_natpmp_mapping(final int internalPort, final int externalPort);
     private native int add_udp_natpmp_mapping(final int internalPort, final int externalPort);
     
-    private native int delete_natpmp_mapping(final int mappingIndex);
-    private native int delete_upnp_mapping(final int mappingIndex);
+    private native void delete_natpmp_mapping(final int mappingIndex);
+    private native void delete_upnp_mapping(final int mappingIndex);
     
     private native void check_alerts();
     
