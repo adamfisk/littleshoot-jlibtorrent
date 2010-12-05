@@ -425,7 +425,8 @@ public class JLibTorrent {
             this.m_mappingIdsToListeners.get(mappingId);
 
         if (listener == null) {
-            m_log.error("No listener for ID!! " + mappingId);
+            // This can often happen because LibTorrent itself maps ports!
+            m_log.info("No listener for ID!! " + mappingId);
             return;
         }
         listener.externalPortMapped(externalPort);
