@@ -1016,7 +1016,6 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1tcp_1upnp_1mappi
 (JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
 {return map_upnp_port(libtorrent::upnp::tcp, internalPort, externalPort);}
 
-
 JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1upnp_1mapping
 (JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
 {return map_upnp_port(libtorrent::upnp::udp, internalPort, externalPort);}
@@ -1029,15 +1028,33 @@ JNIEXPORT jint JNICALL Java_org_lastbamboo_jni_JLibTorrent_add_1udp_1natpmp_1map
 (JNIEnv * env, jobject obj, jint internalPort, jint externalPort)
 {return map_natpmp_port(libtorrent::natpmp::udp, internalPort, externalPort);}
 
+JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1upnp_1mapping
+(JNIEnv * env, jobject obj, jint mappingIndex) {
+	try { 
+		if (session::instance().get_upnp()) {
+			session::instance().get_upnp()->delete_mapping(mappingIndex);
+		}
+    }
+    catch (exception & e) {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    } 
+}
 
 JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1natpmp_1mapping
-(JNIEnv * env, jobject obj, jint mappingIndex) 
-{session::instance().get_natpmp()->delete_mapping(mappingIndex);}
-
-JNIEXPORT void JNICALL Java_org_lastbamboo_jni_JLibTorrent_delete_1upnp_1mapping
-(JNIEnv * env, jobject obj, jint mappingIndex)
-{session::instance().get_upnp()->delete_mapping(mappingIndex);}
-
+(JNIEnv * env, jobject obj, jint mappingIndex) {
+	try { 
+		if (session::instance().get_natpmp()) {
+			session::instance().get_natpmp()->delete_mapping(mappingIndex);
+		}
+    }
+    catch (exception & e) {
+#ifndef NDEBUG
+        cerr << BOOST_CURRENT_FUNCTION << ": caught(" << e.what() << ")" << endl;
+#endif
+    } 
+}
 
 void checkMethodId(const jmethodID field) {
     if (field == NULL) {
