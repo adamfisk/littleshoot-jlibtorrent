@@ -6,7 +6,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.lastbamboo.common.portmapping.NatPmpService;
+import org.lastbamboo.common.portmapping.PortMapListener;
+import org.lastbamboo.common.portmapping.PortMappingProtocol;
+import org.lastbamboo.common.portmapping.UpnpService;
 import org.lastbamboo.common.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +20,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Java wrapper class for calls to native lib torrent.
  */
-public class JLibTorrent {
+public class JLibTorrent implements NatPmpService, UpnpService {
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     private long m_totalUploadBytes;
@@ -31,13 +36,28 @@ public class JLibTorrent {
     private final File m_dataDir = CommonUtils.getLittleShootDir();
     private boolean m_libLoaded;
     
-    private final Map<Integer, PortMappingListener> m_mappingIdsToListeners = 
-        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMappingListener>() {
-            private static final long serialVersionUID = 748372975L;
+    private final Map<Integer, PortMapListener> m_upnpMappingIdsToListeners = 
+        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMapListener>() {
+            private static final long serialVersionUID = 6999097893740294302L;
 
             @Override
             protected boolean removeEldestEntry(
-                    final Map.Entry<Integer, PortMappingListener> eldest) {
+                final Map.Entry<Integer, PortMapListener> eldest) {
+                // This makes the map automatically purge the least used
+                // entry.
+                final boolean remove = size() > 200;
+                return remove;
+            }
+        });
+    
+    private final Map<Integer, PortMapListener> m_natPmpMappingIdsToListeners = 
+        Collections.synchronizedMap(new LinkedHashMap<Integer, PortMapListener>() {
+
+            private static final long serialVersionUID = 8582401885547276580L;
+
+            @Override
+            protected boolean removeEldestEntry(
+                final Map.Entry<Integer, PortMapListener> eldest) {
                 // This makes the map automatically purge the least used
                 // entry.
                 final boolean remove = size() > 200;
@@ -71,6 +91,24 @@ public class JLibTorrent {
             m_log.warn("Could not load LibTorrent library!", t);
             m_libLoaded = false;
         }
+        final Runnable runner = new Runnable() {
+
+            public void run() {
+                final Set<Integer> upnpIndeces = 
+                    m_upnpMappingIdsToListeners.keySet();
+                for (final int index : upnpIndeces) {
+                    removeUpnpMapping(index);
+                }
+                final Set<Integer> natPmpIndeces = 
+                    m_natPmpMappingIdsToListeners.keySet();
+                for (final int index : natPmpIndeces) {
+                    removeNatPmpMapping(index);
+                }
+            }
+        };
+        final Thread shutdown = 
+            new Thread(runner, "Remove-UPNP-NATPMP-Mappings");
+        Runtime.getRuntime().addShutdownHook(shutdown);
     }
 
     public JLibTorrent(final boolean isPro) {
@@ -220,35 +258,63 @@ public class JLibTorrent {
         if (!this.m_libLoaded || this.m_stopped) return;
         set_max_upload_speed(bytesPerSecond);
     }
-
-    public void addTcpUpnpPortMapping(final PortMappingListener listener,
-            final int internalPort, final int externalPort) {
-        if (!this.m_libLoaded || this.m_stopped) return;
-        final int mappingId = add_tcp_upnp_mapping(internalPort, externalPort);
+    
+    public int addUpnpMapping(final PortMappingProtocol protocol, 
+        final int internalPort, final int externalPort, 
+        final PortMapListener portMapListener) {
+        if (!this.m_libLoaded || this.m_stopped) return -1;
+        final int mappingId;
+        switch (protocol) {
+            case TCP:
+                mappingId = add_tcp_upnp_mapping(internalPort, externalPort);
+                break;
+            case UDP:
+                mappingId = add_udp_upnp_mapping(internalPort, externalPort);
+                break;
+            default:
+                m_log.error("Bad protocol");
+                throw new IllegalArgumentException("Bad protocol");
+        }
         m_log.info("Adding port mapping ID: {}", mappingId);
-        m_mappingIdsToListeners.put(mappingId, listener);
+        if (mappingId == -1) {
+            portMapListener.onPortMapError();
+        } else {
+            m_upnpMappingIdsToListeners.put(mappingId, portMapListener);
+        }
+        return mappingId;
     }
 
-    public void addUdpUpnpPortMapping(final PortMappingListener listener,
-            final int internalPort, final int externalPort) {
-        if (!this.m_libLoaded || this.m_stopped) return;
-        final int mappingId = add_udp_upnp_mapping(internalPort, externalPort);
+    public int addNatPmpMapping(final PortMappingProtocol protocol, 
+        final int internalPort, final int externalPort, 
+        final PortMapListener portMapListener) {
+        if (!this.m_libLoaded || this.m_stopped) return -1;
+        final int mappingId;
+        switch (protocol) {
+            case TCP:
+                mappingId = add_tcp_natpmp_mapping(internalPort, externalPort);
+                break;
+            case UDP:
+                mappingId = add_udp_natpmp_mapping(internalPort, externalPort);
+                break;
+            default:
+                m_log.error("Bad protocol");
+                throw new IllegalArgumentException("Bad protocol");
+        }
         m_log.info("Adding port mapping ID: {}", mappingId);
-        m_mappingIdsToListeners.put(mappingId, listener);
+        if (mappingId == -1) {
+            portMapListener.onPortMapError();
+        } else {
+            m_upnpMappingIdsToListeners.put(mappingId, portMapListener);
+        }
+        return mappingId;
+    }
+    
+    public void removeUpnpMapping(final int mappingIndex) {
+        delete_upnp_mapping(mappingIndex);
     }
 
-    public void addTcpNapPmpPortMapping(final PortMappingListener listener,
-            final int internalPort, final int externalPort) {
-        if (!this.m_libLoaded || this.m_stopped) return;
-        final int mappingId = add_tcp_natpmp_mapping(internalPort, externalPort);
-        m_mappingIdsToListeners.put(mappingId, listener);
-    }
-
-    public void addUdpNatPmpPortMapping(final PortMappingListener listener,
-            final int internalPort, final int externalPort) {
-        if (!this.m_libLoaded || this.m_stopped) return;
-        final int mappingId = add_udp_natpmp_mapping(internalPort, externalPort);
-        m_mappingIdsToListeners.put(mappingId, listener);
+    public void removeNatPmpMapping(final int mappingIndex) {
+        delete_natpmp_mapping(mappingIndex);
     }
     
     public void checkAlerts() {
@@ -287,6 +353,9 @@ public class JLibTorrent {
     private native int add_udp_upnp_mapping(final int internalPort, final int externalPort);
     private native int add_tcp_natpmp_mapping(final int internalPort, final int externalPort);
     private native int add_udp_natpmp_mapping(final int internalPort, final int externalPort);
+    
+    private native int delete_natpmp_mapping(final int mappingIndex);
+    private native int delete_upnp_mapping(final int mappingIndex);
     
     private native void check_alerts();
     
@@ -421,15 +490,24 @@ public class JLibTorrent {
         m_log.info("GOT PORT MAPPED!! ID: " + mappingId + " EXTERNAL PORT: "
                 + externalPort);
 
-        final PortMappingListener listener = 
-            this.m_mappingIdsToListeners.get(mappingId);
+        final PortMapListener listener;
+        
+        // From LT docs: type is 0 for NAT-PMP and 1 for UPnP
+        if (type == 0) {
+            listener = this.m_natPmpMappingIdsToListeners.get(mappingId);
+        }
+        else {
+            listener = this.m_upnpMappingIdsToListeners.get(mappingId);
+        }
 
         if (listener == null) {
-            // This can often happen because LibTorrent itself maps ports!
+            // This can often happen because LibTorrent itself maps ports, and
+            // we don't have listeners registered for those while we still
+            // get alerts.
             m_log.info("No listener for ID!! " + mappingId);
             return;
         }
-        listener.externalPortMapped(externalPort);
+        listener.onPortMap(externalPort);
     }
 
     public void portMapLogAlert(final int type, final String message) {

@@ -20,6 +20,12 @@
             <groupId>org.lastbamboo</groupId>
             <artifactId>lastbamboo-common-http-client</artifactId>
             </dependency>
+
+        <dependency>
+            <groupId>org.lastbamboo</groupId>
+            <artifactId>lastbamboo-common-portmapping</artifactId>
+            </dependency>
+
         </dependencies>
 
 <!--
