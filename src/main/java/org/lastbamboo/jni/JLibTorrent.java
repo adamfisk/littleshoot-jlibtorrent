@@ -97,11 +97,13 @@ public class JLibTorrent implements NatPmpService, UpnpService {
                 final Set<Integer> upnpIndeces = 
                     m_upnpMappingIdsToListeners.keySet();
                 for (final int index : upnpIndeces) {
+                    System.out.println("Removing UPnP mapping at index: "+index);
                     removeUpnpMapping(index);
                 }
                 final Set<Integer> natPmpIndeces = 
                     m_natPmpMappingIdsToListeners.keySet();
                 for (final int index : natPmpIndeces) {
+                    System.out.println("Removing NAT-PMP mapping at index: "+index);
                     removeNatPmpMapping(index);
                 }
             }
