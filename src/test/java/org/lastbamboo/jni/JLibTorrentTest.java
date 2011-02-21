@@ -16,9 +16,9 @@ import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
-import org.lastbamboo.common.util.DefaultHttpClient;
-import org.lastbamboo.common.util.DefaultHttpClientImpl;
-import org.lastbamboo.common.util.CommonUtils;
+import org.littleshoot.util.DefaultHttpClient;
+import org.littleshoot.util.DefaultHttpClientImpl;
+import org.littleshoot.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
