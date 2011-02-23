@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.littleshoot.util.DefaultHttpClient;
 import org.littleshoot.util.DefaultHttpClientImpl;
@@ -22,7 +23,7 @@ import org.littleshoot.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@Ignore
 public class JLibTorrentTest
     {
 
