@@ -277,7 +277,8 @@ public class JLibTorrent implements NatPmpService, UpnpService {
                 m_log.error("Bad protocol");
                 throw new IllegalArgumentException("Bad protocol");
         }
-        m_log.info("Adding port mapping ID: {}", mappingId);
+        m_log.info("Adding port mapping ID "+ mappingId +" for port "+
+            externalPort+" and hashCode "+hashCode());
         if (mappingId == -1) {
             portMapListener.onPortMapError();
         } else {
@@ -306,7 +307,7 @@ public class JLibTorrent implements NatPmpService, UpnpService {
         if (mappingId == -1) {
             portMapListener.onPortMapError();
         } else {
-            m_upnpMappingIdsToListeners.put(mappingId, portMapListener);
+            m_natPmpMappingIdsToListeners.put(mappingId, portMapListener);
         }
         return mappingId;
     }
@@ -496,9 +497,11 @@ public class JLibTorrent implements NatPmpService, UpnpService {
         
         // From LT docs: type is 0 for NAT-PMP and 1 for UPnP
         if (type == 0) {
+            m_log.info("Alert from NAT-PMP");
             listener = this.m_natPmpMappingIdsToListeners.get(mappingId);
         }
         else {
+            m_log.info("Alert from UPnP");
             listener = this.m_upnpMappingIdsToListeners.get(mappingId);
         }
 
@@ -506,7 +509,11 @@ public class JLibTorrent implements NatPmpService, UpnpService {
             // This can often happen because LibTorrent itself maps ports, and
             // we don't have listeners registered for those while we still
             // get alerts.
-            m_log.info("No listener for ID!! " + mappingId);
+            m_log.info("No listener for ID!! " + mappingId + " in " + 
+                listener + " this is: "+hashCode());
+            
+            m_log.info("UPNP: "+this.m_upnpMappingIdsToListeners);
+            m_log.info("NAT-PMP: "+this.m_natPmpMappingIdsToListeners);
             return;
         }
         listener.onPortMap(externalPort);
