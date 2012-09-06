@@ -530,4 +530,9 @@ public class JLibTorrent implements NatPmpService, UpnpService {
     public void logError(final String msg) {
         m_log.error("From native code: {}", msg);
     }
+
+    @Override
+    public void shutdown() {
+        // Not needed with libtorrent implementation.
+    }
 }
