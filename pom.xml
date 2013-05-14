@@ -3,7 +3,7 @@
     <groupId>org.littleshoot</groupId>
     <artifactId>jlibtorrent</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>LittleShoot JNI Wrapper Around LibTorrent</name>
     <url>http://www.littleshoot.org</url>
 
